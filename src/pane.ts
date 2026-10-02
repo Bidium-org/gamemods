@@ -22,16 +22,16 @@ export function pane(
     return Box({
       flexDirection: "column",
       rowGap: 1,
-      children: [hint("Clique ici pour utiliser le clavier"), menu(els, actions.onChoose)],
+      children: [hint("Click here to use the keyboard"), menu(els, actions.onChoose)],
     });
   }
   return Box({
     flexDirection: "column",
     rowGap: 1,
     children: [
-      hint("Clique le jeu pour jouer"),
+      hint("Click the game to play"),
       Text({ bold: true, children: [entry.name] }),
-      Text({ children: ["À venir. Ce jeu n'est pas encore jouable."] }),
+      Text({ children: ["Coming soon. This game is not playable yet."] }),
       Button({ key: "pane-back", label: "Menu", hotkey: "q", onPress: actions.onBack }),
     ],
   });

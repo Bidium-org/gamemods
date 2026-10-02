@@ -47,7 +47,7 @@ for (const surface of ["desktop", "terminal"] as const) {
 
     const ui = await $.ui.mount({ ...PANE, surface });
     expect(await ui.find({ type: "Text", text: "Morpion" })).toBeDefined();
-    expect(await ui.find({ type: "Text", text: /^À venir/ })).toBeDefined();
+    expect(await ui.find({ type: "Text", text: /^Coming soon/ })).toBeDefined();
     expect(await ui.find({ key: "game-snake" })).toBeUndefined();
 
     await ui.press({ key: "pane-back" });
@@ -73,11 +73,9 @@ for (const surface of ["desktop", "terminal"] as const) {
     await band.unmount();
 
     const ui = await $.ui.mount({ ...UNFOCUSED, surface });
-    expect(await ui.find({ type: "Text", text: "Clique le jeu pour jouer" })).toBeDefined();
+    expect(await ui.find({ type: "Text", text: "Click the game to play" })).toBeDefined();
     await ui.press({ key: "pane-back" });
-    expect(
-      await ui.find({ type: "Text", text: "Clique ici pour utiliser le clavier" }),
-    ).toBeDefined();
+    expect(await ui.find({ type: "Text", text: "Click here to use the keyboard" })).toBeDefined();
     await ui.unmount();
   });
 }
