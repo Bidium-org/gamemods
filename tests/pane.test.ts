@@ -1,4 +1,5 @@
 import { expect, test } from "claude-code/testing";
+import { stubEngine } from "./engine";
 
 const BAND = {
   plugin: "gameboy",
@@ -34,9 +35,7 @@ const UNFOCUSED = { ...PANE, props: { ...PANE.props, isFocused: false } } as con
 
 for (const surface of ["desktop", "terminal"] as const) {
   test(`the pane goes from the menu to a game and back on ${surface}`, async ($, on) => {
-    on("session.start", () => ({ cwd: "/work" }));
-    on("ui.render", () => ({ type: "Text", props: {}, children: ["engine"] }));
-    on("ui.open", () => ({ value: { isPlaced: true } }));
+    stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
 
     // The band opens a game, as in a session
@@ -62,9 +61,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`the pane asks for a click when it has no keyboard on ${surface}`, async ($, on) => {
-    on("session.start", () => ({ cwd: "/work" }));
-    on("ui.render", () => ({ type: "Text", props: {}, children: ["engine"] }));
-    on("ui.open", () => ({ value: { isPlaced: true } }));
+    stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
 
     const band = await $.ui.mount({ ...BAND, surface });

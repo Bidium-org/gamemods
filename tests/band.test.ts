@@ -1,4 +1,5 @@
 import { expect, test } from "claude-code/testing";
+import { stubEngine } from "./engine";
 
 const BAND = {
   plugin: "gameboy",
@@ -19,13 +20,7 @@ const SURVEY = { ...BAND, props: { ...BAND.props, hasSurvey: true } } as const;
 
 for (const surface of ["desktop", "terminal"] as const) {
   test(`the band folds, unfolds and opens a game on ${surface}`, async ($, on) => {
-    const opened: unknown[] = [];
-    on("session.start", () => ({ cwd: "/work" }));
-    on("ui.render", () => ({ type: "Text", props: {}, children: ["engine band"] }));
-    on("ui.open", (_$, e) => {
-      opened.push(e);
-      return { value: { isPlaced: true } };
-    });
+    const engine = stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
 
     const ui = await $.ui.mount({ ...BAND, surface });
@@ -39,14 +34,13 @@ for (const surface of ["desktop", "terminal"] as const) {
     expect(await ui.find({ type: "Button", text: "Fold" })).toBeDefined();
 
     await ui.press({ key: "game-morpion" });
-    expect(opened).toEqual([{ id: "gameboy", title: "Gameboy", focus: true }]);
+    expect(engine.opened).toEqual([{ id: "gameboy", title: "Gameboy", focus: true }]);
     expect(await ui.find({ key: "game-morpion" })).toBeUndefined();
     await ui.unmount();
   });
 
   test(`the close button hides the band on ${surface}`, async ($, on) => {
-    on("session.start", () => ({ cwd: "/work" }));
-    on("ui.render", () => ({ type: "Text", props: {}, children: ["engine band"] }));
+    stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
 
     const ui = await $.ui.mount({ ...BAND, surface });
