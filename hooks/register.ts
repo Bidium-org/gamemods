@@ -28,7 +28,8 @@ export const register: Register = (on) => {
 
   on("ui.render", { component: "Pane" }, async ($, e, next) => {
     if (e.requestId !== PANE_ID || session.screen === "closed") return next(e);
-    return pane($.ui.resolve(e), session, e.props.isFocused, {
+    const view = { isFocused: e.props.isFocused, bodyRows: e.props.scroll.bodyRows };
+    return pane($.ui.resolve(e), session, view, {
       onChoose: (id) => commit($, chooseGame(session, id)),
       onBack: () => commit($, backToMenu(session)),
     });

@@ -8,31 +8,32 @@ export type PaneActions = {
   onBack: () => void;
 };
 
+export type PaneView = {
+  isFocused: boolean;
+  bodyRows: number;
+};
+
 export function pane(
   els: MenuElements,
   session: Session,
-  isFocused: boolean,
+  view: PaneView,
   actions: PaneActions,
 ): RenderElement {
   const { Box, Text, Button } = els;
   const entry = session.screen === "game" && CATALOG.find((g) => g.id === session.gameId);
-  const hint = (text: string) => (isFocused ? null : Text({ dimColor: true, children: [text] }));
+  const hint = (text: string) =>
+    view.isFocused ? null : Text({ dimColor: true, children: [text] });
+  // Fills the pane: on Desktop a click below the tree loses the keys, so hotkeys would go to the prompt
+  const root = (children: (RenderElement | null)[]) =>
+    Box({ flexDirection: "column", rowGap: 1, minHeight: view.bodyRows, children });
 
   if (!entry) {
-    return Box({
-      flexDirection: "column",
-      rowGap: 1,
-      children: [hint("Click here to use the keyboard"), menu(els, actions.onChoose)],
-    });
+    return root([hint("Click here to use the keyboard"), menu(els, actions.onChoose)]);
   }
-  return Box({
-    flexDirection: "column",
-    rowGap: 1,
-    children: [
-      hint("Click the game to play"),
-      Text({ bold: true, children: [entry.name] }),
-      Text({ children: ["Coming soon. This game is not playable yet."] }),
-      Button({ key: "pane-back", label: "Menu", hotkey: "q", onPress: actions.onBack }),
-    ],
-  });
+  return root([
+    hint("Click the game to play"),
+    Text({ bold: true, children: [entry.name] }),
+    Text({ children: ["Coming soon. This game is not playable yet."] }),
+    Button({ key: "pane-back", label: "Menu", hotkey: "q", onPress: actions.onBack }),
+  ]);
 }
