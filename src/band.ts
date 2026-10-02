@@ -6,6 +6,7 @@ import type { Session } from "./session";
 export type BandActions = {
   onToggle: () => void;
   onChoose: (id: GameId) => void;
+  onClose: () => void;
 };
 
 export function band(
@@ -35,6 +36,8 @@ export function band(
             hotkey: "g",
             onPress: actions.onToggle,
           }),
+          // Desktop draws its native close control in place of the label
+          Button({ key: "band-close", label: "✕", role: "dismiss", onPress: actions.onClose }),
         ],
       }),
       session.bandExpanded ? menu(els, actions.onChoose) : null,
