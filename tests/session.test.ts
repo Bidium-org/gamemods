@@ -1,5 +1,13 @@
 import { expect, test } from "claude-code/testing";
-import { backToMenu, chooseGame, initialSession, toggleBand } from "../src/session";
+import {
+  backToMenu,
+  chooseGame,
+  closePane,
+  hideBand,
+  initialSession,
+  openMenu,
+  toggleBand,
+} from "../src/session";
 
 test("the band folds and unfolds", () => {
   const open = toggleBand(initialSession);
@@ -9,10 +17,25 @@ test("the band folds and unfolds", () => {
 
 test("choosing a game folds the band and shows the game screen", () => {
   const s = chooseGame(toggleBand(initialSession), "morpion");
-  expect(s).toEqual({ screen: "game", bandExpanded: false, gameId: "morpion" });
+  expect(s).toEqual({ screen: "game", bandExpanded: false, bandHidden: false, gameId: "morpion" });
 });
 
 test("going back to the menu keeps the chosen game", () => {
   const s = backToMenu(chooseGame(initialSession, "snake"));
-  expect(s).toEqual({ screen: "menu", bandExpanded: false, gameId: "snake" });
+  expect(s).toEqual({ screen: "menu", bandExpanded: false, bandHidden: false, gameId: "snake" });
+});
+
+test("hiding the band keeps the screen and the chosen game", () => {
+  const playing = chooseGame(initialSession, "tetris");
+  expect(hideBand(playing)).toEqual({ ...playing, bandHidden: true });
+});
+
+test("opening the menu keeps the game in memory", () => {
+  const s = openMenu(chooseGame(initialSession, "morpion"));
+  expect(s).toMatchObject({ screen: "menu", gameId: "morpion" });
+});
+
+test("closing the pane keeps the game in memory", () => {
+  const s = closePane(chooseGame(initialSession, "morpion"));
+  expect(s).toMatchObject({ screen: "closed", gameId: "morpion" });
 });

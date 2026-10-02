@@ -44,6 +44,18 @@ for (const surface of ["desktop", "terminal"] as const) {
     await ui.unmount();
   });
 
+  test(`the close button hides the band on ${surface}`, async ($, on) => {
+    on("session.start", () => ({ cwd: "/work" }));
+    on("ui.render", () => ({ type: "Text", props: {}, children: ["engine band"] }));
+    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+
+    const ui = await $.ui.mount({ ...BAND, surface });
+    await ui.press({ key: "band-close" });
+    expect(await ui.find({ type: "Text", text: "engine band" })).toBeDefined();
+    expect(await ui.find({ key: "band-toggle" })).toBeUndefined();
+    await ui.unmount();
+  });
+
   test(`the band gives way to a survey on ${surface}`, async ($, on) => {
     on("session.start", () => ({ cwd: "/work" }));
     on("ui.render", () => ({ type: "Text", props: {}, children: ["engine survey"] }));
