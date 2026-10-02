@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "gameboy",
-      "source": "./plugins/gameboy",
+      "source": "./",
       "description": "A menu in the band above the prompt, a game in a pane. Zero model calls."
     }
   ]
