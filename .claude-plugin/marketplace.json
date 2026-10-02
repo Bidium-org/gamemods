@@ -1,0 +1,14 @@
+{
+  "name": "gameboy-mods",
+  "description": "A game console playable while Claude works",
+  "owner": {
+    "name": "Tanguy Pauvret"
+  },
+  "plugins": [
+    {
+      "name": "gameboy",
+      "source": "./",
+      "description": "A menu in the band above the prompt, a game in a pane. Zero model calls."
+    }
+  ]
+}

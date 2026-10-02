@@ -1,0 +1,15 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "files": {
+    "includes": [
+      "hooks/**",
+      "src/**",
+      "tests/**",
+      "*.json",
+      "!pnpm-lock.yaml",
+      "!.claude-plugin/types"
+    ]
+  },
+  "linter": { "enabled": true },
+  "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 }
+}
