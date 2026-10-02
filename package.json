@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc",
-    "lint": "biome check ."
+    "lint": "biome check .",
+    "format": "biome check --write ."
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
