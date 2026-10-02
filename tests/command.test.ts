@@ -111,6 +111,7 @@ for (const surface of ["desktop", "terminal"] as const) {
 
     // Closed: the engine draws the pane itself
     const closed = await $.ui.mount({ ...PANE, surface });
+    expect(await closed.find({ type: "Text", text: "engine band" })).toBeDefined();
     expect(await closed.find({ key: "pane-back" })).toBeUndefined();
     await closed.unmount();
 

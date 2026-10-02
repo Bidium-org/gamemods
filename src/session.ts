@@ -28,8 +28,6 @@ export const chooseGame = (s: Session, id: GameId): Session => ({
   gameId: id,
 });
 
-export const backToMenu = (s: Session): Session => ({ ...s, screen: "menu" });
-
 export const openMenu = (s: Session): Session => ({ ...s, screen: "menu" });
 
 // The game stays in memory: only the pane goes away

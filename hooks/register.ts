@@ -3,7 +3,6 @@ import { band, WIDEN } from "../src/band";
 import { parseArgs } from "../src/command";
 import { pane } from "../src/pane";
 import {
-  backToMenu,
   chooseGame,
   closePane,
   hideBand,
@@ -77,7 +76,7 @@ export const register: Register = (on) => {
     const view = { isFocused: e.props.isFocused, bodyRows: e.props.scroll.bodyRows };
     return pane($.ui.resolve(e), session, view, {
       onChoose: (id) => commit($, chooseGame(session, id)),
-      onBack: () => commit($, backToMenu(session)),
+      onBack: () => commit($, openMenu(session)),
     });
   });
 };
