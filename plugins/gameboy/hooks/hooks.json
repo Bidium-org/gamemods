@@ -1,0 +1,4 @@
+{
+  "description": "Gameboy hooks module",
+  "modules": ["./register.ts"]
+}

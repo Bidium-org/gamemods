@@ -1,0 +1,6 @@
+{
+  "name": "gameboy",
+  "version": "0.0.1",
+  "description": "A game console playable while Claude works.",
+  "author": { "name": "Tanguy Pauvret" }
+}
