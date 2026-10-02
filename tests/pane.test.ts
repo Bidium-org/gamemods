@@ -31,7 +31,10 @@ const PANE = {
   },
 } as const;
 
-const UNFOCUSED = { ...PANE, props: { ...PANE.props, isFocused: false } } as const;
+const UNFOCUSED = {
+  ...PANE,
+  props: { ...PANE.props, isFocused: false },
+} as const;
 
 for (const surface of ["desktop", "terminal"] as const) {
   test(`the pane goes from the menu to a game and back on ${surface}`, async ($, on) => {
@@ -57,6 +60,29 @@ for (const surface of ["desktop", "terminal"] as const) {
     await ui.press({ key: "game-snake" });
     expect(await ui.find({ type: "Text", text: "Snake" })).toBeDefined();
     expect(await ui.find({ key: "pane-back" })).toBeDefined();
+    await ui.unmount();
+  });
+
+  test(`the pane root fills the body on both screens on ${surface}`, async ($, on) => {
+    stubEngine(on);
+    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+
+    const band = await $.ui.mount({ ...BAND, surface });
+    await band.press({ key: "band-toggle" });
+    await band.press({ key: "game-morpion" });
+    await band.unmount();
+
+    const ui = await $.ui.mount({ ...PANE, surface });
+    expect(await ui.drawn()).toMatchObject({
+      type: "Box",
+      props: { minHeight: 46 },
+    });
+
+    await ui.press({ key: "pane-back" });
+    expect(await ui.drawn()).toMatchObject({
+      type: "Box",
+      props: { minHeight: 46 },
+    });
     await ui.unmount();
   });
 
