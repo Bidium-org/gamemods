@@ -1,13 +1,18 @@
 import type { ElementTable, RenderElement } from "claude-code";
-import { CATALOG, type CatalogEntry, type GameId } from "./catalog";
+import { CATALOG, type CatalogEntry, type GameId } from "./games/catalog";
+import { pausedGameId, type Session } from "./session";
 
 export type MenuElements = Pick<ElementTable<"terminal">, "Box" | "Text" | "Button">;
 
-const describe = (entry: CatalogEntry): string =>
-  entry.status === "soon" ? `soon · ${entry.tagline}` : entry.tagline;
+const describe = (entry: CatalogEntry, session: Session): string => {
+  if (entry.status === "soon") return `soon · ${entry.tagline}`;
+  const paused = pausedGameId(session) === entry.id ? ["paused"] : [];
+  return [...paused, `best ${session.best[entry.id] ?? 0}`, entry.tagline].join(" · ");
+};
 
 export function menu(
   { Box, Text, Button }: MenuElements,
+  session: Session,
   onChoose: (id: GameId) => void,
 ): RenderElement {
   return Box({
@@ -24,7 +29,7 @@ export function menu(
             ...(i === 0 && { autoFocus: true as const }),
             onPress: () => onChoose(entry.id),
           }),
-          Text({ dimColor: true, children: [describe(entry)] }),
+          Text({ dimColor: true, children: [describe(entry, session)] }),
         ],
       }),
     ),

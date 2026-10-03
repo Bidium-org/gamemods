@@ -1,4 +1,4 @@
-import { CATALOG, type GameId } from "./catalog";
+import { CATALOG, type GameId } from "./games/catalog";
 
 export type Command = { kind: "menu" } | { kind: "stop" } | { kind: "game"; id: GameId };
 

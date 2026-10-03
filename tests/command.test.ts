@@ -1,7 +1,7 @@
 import { expect, test } from "claude-code/testing";
 import { WIDEN } from "../src/band";
 import { parseArgs } from "../src/command";
-import { gameboy, stubEngine } from "./engine";
+import { BAND, gameboy, PANE, stubEngine } from "./engine";
 
 test("no argument opens the menu", () => {
   expect(parseArgs("")).toEqual({ kind: "menu" });
@@ -26,36 +26,6 @@ test("only the first word counts", () => {
   expect(parseArgs("tetris now")).toEqual({ kind: "game", id: "tetris" });
   expect(parseArgs("pong morpion")).toEqual({ kind: "menu" });
 });
-
-const BAND = {
-  plugin: "gameboy",
-  component: "AbovePrompt",
-  requestId: "above-prompt",
-  viewport: { columns: 106, rows: 52, isFullscreen: true },
-  props: {
-    hasSurvey: false,
-    isWorking: true,
-    maxRows: 12,
-    bodyColumns: 95,
-    scroll: { offset: 0, bodyRows: 12 },
-    view: {},
-  },
-} as const;
-
-const PANE = {
-  plugin: "gameboy",
-  component: "Pane",
-  requestId: "gameboy",
-  viewport: { columns: 106, rows: 52, isFullscreen: true },
-  props: {
-    title: "Gameboy",
-    isFocused: true,
-    bodyColumns: 38,
-    placement: "dock",
-    scroll: { offset: 0, bodyRows: 46 },
-    view: {},
-  },
-} as const;
 
 for (const surface of ["desktop", "terminal"] as const) {
   test(`the command registers as immediate on ${surface}`, async ($, on) => {

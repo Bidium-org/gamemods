@@ -1,20 +1,5 @@
 import { expect, test } from "claude-code/testing";
-import { stubEngine } from "./engine";
-
-const BAND = {
-  plugin: "gameboy",
-  component: "AbovePrompt",
-  requestId: "above-prompt",
-  viewport: { columns: 106, rows: 52, isFullscreen: true },
-  props: {
-    hasSurvey: false,
-    isWorking: false,
-    maxRows: 12,
-    bodyColumns: 95,
-    scroll: { offset: 0, bodyRows: 12 },
-    view: {},
-  },
-} as const;
+import { BAND, stubEngine } from "./engine";
 
 const SURVEY = { ...BAND, props: { ...BAND.props, hasSurvey: true } } as const;
 
