@@ -1,0 +1,33 @@
+name: Game proposal
+description: Suggest a game for the console
+labels: [game]
+body:
+  - type: input
+    id: game
+    attributes:
+      label: Game
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it fits
+      description: A game here is played in short bursts while Claude works, in a small side pane
+    validations:
+      required: true
+  - type: textarea
+    id: controls
+    attributes:
+      label: Controls
+      description: Every key must be a digit or a lowercase letter; p, r and q are taken
+    validations:
+      required: true
+  - type: dropdown
+    id: pace
+    attributes:
+      label: Pace
+      options:
+        - Turn-based
+        - Real-time
+    validations:
+      required: true
