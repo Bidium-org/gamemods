@@ -9,7 +9,7 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first. To add a game: [docs/AD
 
 ## Dev loop
 
-- **Terminal:** `claude --plugin-dir .` from the repo root.
+- **Terminal:** `claude --plugin-dir .` from the repo root. The mod reloads each time you save.
 - **Desktop:** in `~/.claude/settings.json`, under `env`, set `CLAUDE_CODE_PLUGIN_DIRS` to the absolute path of the repo root. Restart Desktop and open a local session. After an edit, `/reload-plugins` reloads the code.
 - Remove `CLAUDE_CODE_PLUGIN_DIRS` when you are done: it loads the mod in every session and skews a clean install test.
 - A marketplace install is a snapshot pinned to a commit: it never picks up local changes, even after `/reload-plugins`. Use it only to test a committed version.
@@ -61,7 +61,7 @@ Run it on Desktop, then in a terminal, for any change to the band, the pane, a g
 | Surface  | Where                                                                                 |
 | :------- | :------------------------------------------------------------------------------------ |
 | Desktop  | `~/Library/Logs/Claude/claude.ai-web.log` (macOS), lines `engine surface: ...`        |
-| Terminal | `claude --debug-file <file>`, lines `surface environment of <plugin> loaded <module>` |
+| Terminal | `claude --debug-file <file>`, lines `hooks module gameboy@inline loaded ...`          |
 
 ## Known symptoms
 

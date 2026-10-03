@@ -17,4 +17,4 @@ what changed, and why, so anyone can follow without reading the diff.
 ## Checks
 
 - [ ] `pnpm typecheck`, `pnpm lint`
-- [ ] `claude plugin test`, `claude plugin validate .`
+- [ ] `claude plugin test`, `claude plugin validate .`, `claude plugin validate .claude-plugin/plugin.json`

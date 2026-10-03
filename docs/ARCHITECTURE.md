@@ -74,7 +74,7 @@ A game runs only on the game screen with no pause. One field holds the pause and
 
 ## Platform constraints
 
-Measured on Desktop 2.1.286 and terminal 2.1.287. The mods API is in early access; a new build can change any of these.
+Measured on Desktop 2.1.286 and terminal 2.1.287. A new Claude Code build can change any of these.
 
 - **No `Client`.** It never loads on Desktop (content security policy). Loop, state and input all live in the hooks module, and every view is a tree returned by `ui.render`.
 - **Proportional font on Desktop.** A grid drawn with characters never aligns. `src/render/text.ts` draws each cell as a fixed-size `Box` with its glyph centered; the terminal, monospace, aligns both.

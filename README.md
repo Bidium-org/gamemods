@@ -43,9 +43,9 @@ Your score is your win streak. The best streak is kept across sessions.
 
 ## Limitations
 
-- Nothing is drawn in Desktop WSL sessions, VS Code chat, `claude -p` or cloud sessions: mods do not run there.
+- Nothing is drawn in Desktop WSL sessions, the VS Code chat panel, `claude -p` or cloud sessions.
 - On Desktop, `/gameboy` typed during a turn waits for the turn to end. During a turn, use the **Games** button instead.
-- The Claude Code mods API is in early access: a new Claude Code build can break the mod.
+- Tested on Claude Code 2.1.286 (Desktop) and 2.1.287 (terminal). A newer build can behave differently.
 
 ## Contributing
 
