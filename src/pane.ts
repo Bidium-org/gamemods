@@ -29,6 +29,11 @@ export type PaneView = {
 // Anthropic's orange: a paused game must read as paused at a glance
 const PAUSE_COLOR = "#d97757";
 
+// Header, frame and legend around the board, with the gaps between them
+const CHROME_ROWS = 9;
+// The "click to play" hint and its gap
+const HINT_ROWS = 2;
+
 const PAUSE_LINE: Record<PauseReason, string> = {
   manual: "Paused",
   focus: "Paused: the game lost the keyboard",
@@ -169,6 +174,12 @@ export function pane(
   }
   const drawn = drawBoard(els, view.surface, game.board(session.state), {
     dimmed: session.pause !== null,
+    motion: session.motion,
+    moveId: session.moveId,
+    room: {
+      columns: view.bodyColumns - 2,
+      rows: view.bodyRows - CHROME_ROWS - (view.isFocused ? 0 : HINT_ROWS),
+    },
   });
   if (!drawn) {
     return root([

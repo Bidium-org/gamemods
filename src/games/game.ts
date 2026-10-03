@@ -1,3 +1,4 @@
+import type { JsonValue } from "claude-code";
 import type { PictureBoard } from "./hogzzle/board";
 
 export type Control = { id: string; label: string; hotkey: string };
@@ -18,6 +19,9 @@ export type Phase = "playing" | "won" | "lost" | "draw";
 
 export type GameStatus = { phase: Phase; score: number; line: string };
 
+// `motion` crosses into a `Client`'s props: plain JSON, null for a move with nothing to animate
+export type Play<S> = { state: S; motion: JsonValue };
+
 export interface Game<S, B extends Board = Board> {
   controls: Control[];
   // Pane body below which the game shows "Widen the window"
@@ -32,6 +36,8 @@ export interface Game<S, B extends Board = Board> {
   tick?(s: S): S;
   // Called when a pause lifts; absent, the game goes on as it was left
   resume?(s: S): S;
+  // Absent, a key goes to `onControl` and nothing animates; `ms` is how long a motion is drawn
+  animation?: { ms: number; play(s: S, id: string): Play<S> };
   board(s: S): B;
   status(s: S): GameStatus;
 }
