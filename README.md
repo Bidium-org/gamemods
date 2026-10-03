@@ -1,4 +1,8 @@
-# Gamemods: games for Claude Code
+<p align="center">
+  <img src="assets/icon.png" alt="Gamemods icon: a retro handheld console with a terminal prompt on its screen" width="128">
+</p>
+
+<h1 align="center">Gamemods: games for Claude Code</h1>
 
 Play games in Claude Code while Claude works. Gamemods is a Claude Code mod (plugin): a game menu in the band above the prompt, each game in a side pane. It works in the terminal and in Desktop. Every key is answered locally: zero model calls, zero tokens, nothing added to the conversation.
 
