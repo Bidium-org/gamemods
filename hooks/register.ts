@@ -22,7 +22,7 @@ import {
   togglePause,
 } from "../src/session";
 
-const PANE_ID = "gameboy";
+const PANE_ID = "gamemods";
 
 let session = initialSession;
 
@@ -59,7 +59,7 @@ function commit(
 async function openPane($: EngineInterface) {
   const opened = await $.ui.open({
     id: PANE_ID,
-    title: "Gameboy",
+    title: "Gamemods",
     focus: true,
   });
   if (opened.isPlaced) return;
@@ -96,8 +96,8 @@ async function update($: EngineInterface, next: Session, options?: CommitOptions
 export const register: Register = (on) => {
   on("session.start", async ($, e, next) => {
     await $.command.register({
-      name: "gameboy",
-      description: "Open the game console, or a game by id; stop closes it",
+      name: "gamemods",
+      description: "Open the games menu, or a game by id; stop closes it",
       argumentHint: "[game|stop]",
       immediate: true,
     });
@@ -105,7 +105,7 @@ export const register: Register = (on) => {
     return next(e);
   });
 
-  on("command.run", { command: "gameboy" }, async ($, e) => {
+  on("command.run", { command: "gamemods" }, async ($, e) => {
     const command = parseArgs(e.args);
     if (command.kind === "stop") {
       await $.ui.close({ id: PANE_ID });

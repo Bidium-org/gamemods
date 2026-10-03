@@ -1,15 +1,15 @@
 {
-  "name": "gameboy-mods",
-  "description": "A game console playable while Claude works",
+  "name": "gamemods",
+  "description": "Games for Claude Code: play while Claude works",
   "owner": {
     "name": "Birium",
     "email": "bidiumdev@gmail.com"
   },
   "plugins": [
     {
-      "name": "gameboy",
+      "name": "gamemods",
       "source": "./",
-      "description": "A menu in the band above the prompt, a game in a pane. Zero model calls."
+      "description": "Games for Claude Code: play while Claude works. A menu above the prompt, each game in a side pane. Zero model calls."
     }
   ]
 }

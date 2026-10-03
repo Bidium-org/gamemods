@@ -9,7 +9,7 @@ for (const surface of ["desktop", "terminal"] as const) {
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
 
     const ui = await $.ui.mount({ ...BAND, surface });
-    expect(await ui.find({ type: "Text", text: "GAMEBOY" })).toBeDefined();
+    expect(await ui.find({ type: "Text", text: "GAMEMODS" })).toBeDefined();
     expect(await ui.find({ type: "Text", text: "Claude is waiting" })).toBeDefined();
     expect(await ui.find({ type: "Text", text: "engine band" })).toBeDefined();
     expect(await ui.find({ key: "game-morpion" })).toBeUndefined();
@@ -19,7 +19,7 @@ for (const surface of ["desktop", "terminal"] as const) {
     expect(await ui.find({ type: "Button", text: "Fold" })).toBeDefined();
 
     await ui.press({ key: "game-morpion" });
-    expect(engine.opened).toEqual([{ id: "gameboy", title: "Gameboy", focus: true }]);
+    expect(engine.opened).toEqual([{ id: "gamemods", title: "Gamemods", focus: true }]);
     expect(await ui.find({ key: "game-morpion" })).toBeUndefined();
     await ui.unmount();
   });
@@ -42,7 +42,7 @@ for (const surface of ["desktop", "terminal"] as const) {
 
     const ui = await $.ui.mount({ ...SURVEY, surface });
     expect(await ui.find({ type: "Text", text: "engine survey" })).toBeDefined();
-    expect(await ui.find({ type: "Text", text: "GAMEBOY" })).toBeUndefined();
+    expect(await ui.find({ type: "Text", text: "GAMEMODS" })).toBeUndefined();
     await ui.unmount();
   });
 }

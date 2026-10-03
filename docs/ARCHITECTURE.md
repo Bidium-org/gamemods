@@ -7,7 +7,7 @@ A Claude Code mod: a game menu in the band above the prompt, the game in a pane.
 ```
 .claude-plugin/   → plugin and marketplace manifests (the repo is both); types/ is generated, ignored
 hooks/            → the single entry point: wires engine hooks to the session
-src/              → session state and transitions, band, pane and menu views, /gameboy parsing
+src/              → session state and transitions, band, pane and menu views, /gamemods parsing
 src/games/        → contract, catalog, registry and helpers shared by games; one folder per game, with its README
 src/render/       → Board to elements: picks the renderer by board kind and surface; text for cell boards
 tests/            → kit tests run by `claude plugin test`; shared engine stub in tests/engine.ts
@@ -20,18 +20,18 @@ Games are pure (state in, state out, no `$`). How to add one: `docs/ADD_A_GAME.m
 
 **Session start.**
 
-1. `session.start` in `hooks/register.ts` registers `/gameboy` with `immediate: true`.
+1. `session.start` in `hooks/register.ts` registers `/gamemods` with `immediate: true`.
 2. `loadBest()` reads `best:<id>` from `$.store` for every `available` game of `src/games/catalog.ts`.
 
 **Open from the band.**
 
-1. `ui.render` `AbovePrompt` → `band()` in `src/band.ts`: the `GAMEBOY` line, the other mods' drawing kept above it (`await next(e)` as a child). Yields to `hasSurvey` and to its own `✕`.
+1. `ui.render` `AbovePrompt` → `band()` in `src/band.ts`: the `GAMEMODS` line, the other mods' drawing kept above it (`await next(e)` as a child). Yields to `hasSurvey` and to its own `✕`.
 2. Expanded, it draws `menu()` from `src/menu.ts`, the same list the pane shows.
 3. Choosing a game → `chooseGame()` in `src/session.ts`, seeded by `$.clock.now()` → `openPane()` in `hooks/register.ts` → `$.ui.open({ focus: true })`.
 4. If the pane comes back unplaced, the band shows a "widen the window" line (read from `$.ui.panes()` at each render, never stored); a toast replaces it when the band is hidden.
 5. `ui.render` `Pane` → `pane()` in `src/pane.ts`: menu screen or game screen.
 
-**`/gameboy [game|stop]`.**
+**`/gamemods [game|stop]`.**
 
 1. `command.run` → `parseArgs()` in `src/command.ts`: first word only, unknown opens the menu.
 2. `stop` → `$.ui.close`, then `closePane()`. A game id → `chooseGame()`. Otherwise → `openMenu()`. Then `openPane()`.
@@ -51,7 +51,7 @@ Games are pure (state in, state out, no `$`). How to add one: `docs/ADD_A_GAME.m
 3. Each period, `onTick()` calls `tick()` in `src/session.ts`, which calls the game's `tick()`. It redraws only when `gameView()` (board and status) changed: a redraw replaces the pane's buttons, and a key aimed at a replaced one is lost (`ui_press not handled` in the Desktop log). At 10 redraws a second, Echo dropped keys on Desktop.
 4. A pause raised in the `Pane` render (focus loss) cannot commit: the next tick sees the pause, changes nothing, and that commit stops the clock.
 
-**Closing the pane.** The native `✕` (`ui.close` with a person origin) and `/gameboy stop` both reach `closePane()`. The game stays in memory, paused. Reopening shows the menu; choosing the same game resumes it, another one abandons it.
+**Closing the pane.** The native `✕` (`ui.close` with a person origin) and `/gamemods stop` both reach `closePane()`. The game stays in memory, paused. Reopening shows the menu; choosing the same game resumes it, another one abandons it.
 
 ## Pause policy
 
@@ -87,7 +87,7 @@ Measured on Desktop 2.1.286 and terminal 2.1.287. A new Claude Code build can ch
 
 - **No `Client`.** It never loads on Desktop (content security policy). Loop, state and input all live in the hooks module, and every view is a tree returned by `ui.render`.
 - **Proportional font on Desktop.** A grid drawn with characters never aligns. `src/render/text.ts` draws each cell as a fixed-size `Box` with its glyph centered; the terminal, monospace, aligns both.
-- **No focus at open on Desktop.** Neither after a band press nor after `/gameboy`, despite `focus: true`; the terminal grants it. A click gives the keys only if it lands inside the drawn tree, so the pane's root `Box` takes `minHeight` of the body rows. The pane shows a "click to play" hint while unfocused.
+- **No focus at open on Desktop.** Neither after a band press nor after `/gamemods`, despite `focus: true`; the terminal grants it. A click gives the keys only if it lands inside the drawn tree, so the pane's root `Box` takes `minHeight` of the body rows. The pane shows a "click to play" hint while unfocused.
 - **`Svg` keeps its first drawing per `key` on Desktop.** Text around it updates, the picture does not. A press counter as key replays old drawings after `/reload-plugins`, when the counter restarts: the key must be a hash of the `source` (`src/games/hogzzle/svg.ts`). The types declare no `key` on `Svg` and the test kit drops it from the drawn tree, yet Desktop reads it: only Desktop shows this. The `source` is capped at 131 072 characters.
 - **No clickable cell.** `Button` takes no size: a plain one inside a tile draws on Desktop as a small native button in its middle, never the tile; a blank label collapses it to nothing, and in a terminal the focus inverts its label into a bar. Removing the focused Button from the tree (a cell redrawn without one) takes the focus from the pane on Desktop, which pauses the game. Tried with Echo and dropped: cells are played by keys.
 - **Pane placement.** Desktop keeps the pane `dock`, even out of fullscreen. Below the game's `size` the pane shows "Widen the window to play". `inline` was never observed.

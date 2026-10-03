@@ -1,10 +1,10 @@
-# Gameboy
+# Gamemods: games for Claude Code
 
-A game console for Claude Code, playable while Claude works. A menu sits in the band above the prompt, the game opens in a side pane. Every key is answered locally: zero model calls, zero tokens, nothing added to the conversation.
+Play games in Claude Code while Claude works. Gamemods is a Claude Code mod (plugin): a game menu in the band above the prompt, each game in a side pane. It works in the terminal and in Desktop. Every key is answered locally: zero model calls, zero tokens, nothing added to the conversation.
 
 ## Games
 
-Rules, keys and score of each game are in its README.
+The Claude Code game mods available today. Rules, keys and score of each game are in its README.
 
 | Game                                   | What                                             | Surfaces          |
 | :------------------------------------- | :----------------------------------------------- | :---------------- |
@@ -22,19 +22,19 @@ Rules, keys and score of each game are in its README.
 From a terminal:
 
 ```bash
-claude plugin marketplace add Birium/claude-gameboy
+claude plugin marketplace add Birium/gamemods
 ```
 
 ```bash
-claude plugin install gameboy@gameboy-mods
+claude plugin install gamemods@gamemods
 ```
 
-Or inside a Claude Code session: `/plugin marketplace add Birium/claude-gameboy`, then `/plugin install gameboy@gameboy-mods`. In Desktop: **+** next to the prompt, **Plugins**, **Add plugin**. Desktop and terminal share the same settings, so one install covers both.
+Or inside a Claude Code session: `/plugin marketplace add Birium/gamemods`, then `/plugin install gamemods@gamemods`. In Desktop: **+** next to the prompt, **Plugins**, **Add plugin**. Desktop and terminal share the same settings, so one install covers both.
 
 ## Play
 
-- **Open the menu:** press **Games** on the `GAMEBOY` line above the prompt (click, or Tab then Enter), or type `/gameboy`.
-- **Start a game:** pick it in the menu, or type `/gameboy <game>` (`/gameboy morpion`). `/gameboy stop` closes the pane.
+- **Open the menu:** press **Games** on the `GAMEMODS` line above the prompt (click, or Tab then Enter), or type `/gamemods`.
+- **Start a game:** pick it in the menu, or type `/gamemods <game>` (`/gamemods morpion`). `/gamemods stop` closes the pane.
 - **Give it the keyboard:** on Desktop, click inside the pane once.
 
 Every game has these keys; its own are in its README.
@@ -52,7 +52,7 @@ Each game has its own score, described in its README. The best score of each gam
 ## Limitations
 
 - Nothing is drawn in Desktop WSL sessions, the VS Code chat panel, `claude -p` or cloud sessions.
-- On Desktop, `/gameboy` typed during a turn waits for the turn to end. During a turn, use the **Games** button instead.
+- On Desktop, `/gamemods` typed during a turn waits for the turn to end. During a turn, use the **Games** button instead.
 - Tested on Claude Code 2.1.286 (Desktop) and 2.1.287 (terminal). A newer build can behave differently.
 
 ## Contributing
@@ -68,3 +68,5 @@ Security issues: [SECURITY.md](SECURITY.md).
 [MIT](LICENSE) © Birium
 
 Hogzzle's pictures are © PostHog, used unmodified and not covered by this license: see [Hogzzle → Pictures](src/games/hogzzle/README.md#pictures).
+
+Gamemods is an independent project, not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic.

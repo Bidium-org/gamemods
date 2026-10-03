@@ -1,5 +1,5 @@
 name: Game proposal
-description: Suggest a game for the console
+description: Suggest a game for Gamemods
 labels: [game]
 body:
   - type: input
@@ -19,7 +19,7 @@ body:
     id: controls
     attributes:
       label: Controls
-      description: "Key rules: [Conventions](https://github.com/Birium/claude-gameboy/blob/main/docs/ARCHITECTURE.md#conventions)"
+      description: "Key rules: [Conventions](https://github.com/Birium/gamemods/blob/main/docs/ARCHITECTURE.md#conventions)"
     validations:
       required: true
   - type: dropdown

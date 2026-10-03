@@ -38,7 +38,7 @@ export function stubEngine(
   });
   on("ui.panes", () => ({
     value: log.opened.length
-      ? [{ id: "gameboy", title: "Gameboy", isShown: true, isFocused: false, isPlaced }]
+      ? [{ id: "gamemods", title: "Gamemods", isShown: true, isFocused: false, isPlaced }]
       : [],
   }));
   on("ui.toast", (_$, e) => {
@@ -57,7 +57,7 @@ export function stubEngine(
 }
 
 export const BAND = {
-  plugin: "gameboy",
+  plugin: "gamemods",
   component: "AbovePrompt",
   requestId: "above-prompt",
   viewport: { columns: 106, rows: 52, isFullscreen: true },
@@ -72,12 +72,12 @@ export const BAND = {
 } as const;
 
 export const PANE = {
-  plugin: "gameboy",
+  plugin: "gamemods",
   component: "Pane",
-  requestId: "gameboy",
+  requestId: "gamemods",
   viewport: { columns: 106, rows: 52, isFullscreen: true },
   props: {
-    title: "Gameboy",
+    title: "Gamemods",
     isFocused: true,
     bodyColumns: 38,
     placement: "dock",
@@ -108,10 +108,10 @@ export const WINNING_KEYS = [
   ...["control-up", "control-place"],
 ];
 
-// The person typing `/gameboy <args>` at the prompt
-export const gameboy = ($: Engine, args = "") =>
+// The person typing `/gamemods <args>` at the prompt
+export const gamemods = ($: Engine, args = "") =>
   $.command.run({
-    command: "gameboy",
+    command: "gamemods",
     args,
     origin: { kind: "composer" },
     presentation: { isFullscreen: true, columns: 106 },

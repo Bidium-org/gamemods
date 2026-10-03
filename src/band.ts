@@ -41,7 +41,7 @@ export function band(
             flexDirection: "row",
             columnGap: 2,
             children: [
-              Text({ bold: true, children: ["GAMEBOY"] }),
+              Text({ bold: true, children: ["GAMEMODS"] }),
               Text({ dimColor: true, children: [claudeState(view.isWorking)] }),
               paused ? Text({ children: [`${paused.name} paused`] }) : null,
               Button({
