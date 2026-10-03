@@ -1,5 +1,5 @@
 import type { On } from "claude-code";
-import type { Engine, Mounted } from "claude-code/testing";
+import { type Engine, type MockClock, type Mounted, mock } from "claude-code/testing";
 import type { GameId } from "../src/games/catalog";
 
 export type EngineLog = {
@@ -9,6 +9,8 @@ export type EngineLog = {
   toasts: string[];
   // The plugin's store, as kept between sessions
   stored: Record<string, unknown>;
+  // Moves only when the test advances it
+  clock: MockClock;
 };
 
 // The engine side of every call the mod makes: what it registers, opens, closes, toasts and stores.
@@ -17,7 +19,9 @@ export function stubEngine(
   on: On,
   { isPlaced = true, stored = {} }: { isPlaced?: boolean; stored?: Record<string, unknown> } = {},
 ): EngineLog {
-  const log: EngineLog = { registered: [], opened: [], closed: [], toasts: [], stored };
+  // Starts at the game seed: one whose careless bot lets WINNING_KEYS win
+  const clock = mock.clock(on, { now: 1 });
+  const log: EngineLog = { registered: [], opened: [], closed: [], toasts: [], stored, clock };
   on("session.start", () => ({ cwd: "/work" }));
   on("ui.render", () => ({ type: "Text", props: {}, children: ["engine band"] }));
   on("command.register", (_$, e) => {
@@ -44,8 +48,6 @@ export function stubEngine(
   on("classic.PermissionRequest", () => ({}));
   on("turn.start", (_$, e) => ({ turnId: e.turnId }));
   on("turn.complete", (_$, e) => ({ text: e.answer }));
-  // The game seed: one whose careless bot lets WINNING_KEYS win
-  on("clock.now", () => ({ value: 1 }));
   on("store.get", (_$, e) => ({ value: log.stored[e.key] }));
   on("store.set", (_$, e) => {
     log.stored[e.key] = e.value;

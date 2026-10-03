@@ -1,10 +1,11 @@
-import type { EngineInterface, Register } from "claude-code";
+import type { EngineInterface, Register, Timer } from "claude-code";
 import { band, WIDEN } from "../src/band";
 import { parseArgs } from "../src/command";
 import { CATALOG, type GameId } from "../src/games/catalog";
 import { pane } from "../src/pane";
 import {
   chooseGame,
+  clockMs,
   closePane,
   control,
   hideBand,
@@ -15,6 +16,7 @@ import {
   restart,
   type Session,
   setWorking,
+  tick,
   toggleBand,
   togglePause,
 } from "../src/session";
@@ -23,11 +25,24 @@ const PANE_ID = "gameboy";
 
 let session = initialSession;
 
+// The session's single clock, at the running game's period
+let clock: { ms: number; timer: Timer } | null = null;
+
+// Started and stopped from the session after each change: nothing ticks while no game runs
+function syncClock($: EngineInterface) {
+  const ms = clockMs(session);
+  if ((clock?.ms ?? null) === ms) return;
+  clock?.timer.cancel();
+  clock = ms === null ? null : { ms, timer: $.clock.every(ms, () => update($, tick(session))) };
+}
+
 // The engine reads `$` only at `$.noun.event(...)` call sites and in top-level functions like this
 function commit($: EngineInterface, next: Session) {
-  if (next === session) return;
-  session = next;
-  $.ui.invalidate("ui.render");
+  if (next !== session) {
+    session = next;
+    $.ui.invalidate("ui.render");
+  }
+  syncClock($);
 }
 
 // An unplaced pane is open but undrawn: the band says why, and a toast covers a hidden band
@@ -60,9 +75,10 @@ async function saveBest($: EngineInterface, id: GameId, score: number) {
   await $.store.set(bestKey(id), score);
 }
 
-async function play($: EngineInterface, controlId: string) {
+// A change that can raise the score: a key, a tick
+async function update($: EngineInterface, next: Session) {
   const before = session;
-  commit($, control(session, controlId));
+  commit($, next);
   const { gameId, best } = session;
   if (gameId && best[gameId] !== before.best[gameId]) await saveBest($, gameId, best[gameId] ?? 0);
 }
@@ -150,7 +166,7 @@ export const register: Register = (on) => {
     return pane($.ui.resolve(e), session, view, {
       onChoose: async (id) => commit($, chooseGame(session, id, await $.clock.now())),
       onBack: () => commit($, openMenu(session)),
-      onControl: (id) => play($, id),
+      onControl: (id) => update($, control(session, id)),
       onPause: () => commit($, togglePause(session)),
       onRestart: async () => commit($, restart(session, await $.clock.now())),
     });

@@ -50,8 +50,13 @@ export const hideBand = (s: Session): Session => ({ ...s, bandHidden: true });
 export const pause = (s: Session, reason: PauseReason): Session =>
   s.pause || s.state === null ? s : { ...s, pause: reason };
 
-export const togglePause = (s: Session): Session =>
-  s.pause ? { ...s, pause: null } : pause(s, "manual");
+// Lifting the pause lets the game pick up again, as `resume` decides
+const unpause = (s: Session): Session => {
+  const resume = currentGame(s)?.resume;
+  return { ...s, pause: null, state: resume && s.state !== null ? resume(s.state) : s.state };
+};
+
+export const togglePause = (s: Session): Session => (s.pause ? unpause(s) : pause(s, "manual"));
 
 // The same game comes back as it was left; another one abandons it
 export const chooseGame = (s: Session, id: GameId, seed: number): Session => {
@@ -71,15 +76,31 @@ export const openMenu = (s: Session): Session => pause({ ...s, screen: "menu" },
 export const closePane = (s: Session): Session =>
   pause({ ...s, screen: "closed", hasFocus: false }, "menu");
 
-// A paused game ignores its keys; the best score follows the score up
+// The best score follows the score up
+const advance = (s: Session, game: Game<unknown>, gameId: GameId, state: unknown): Session => {
+  if (state === s.state) return s;
+  const best = Math.max(s.best[gameId] ?? 0, game.status(state).score);
+  return { ...s, state, best: { ...s.best, [gameId]: best } };
+};
+
+// A paused game ignores its keys
 export const control = (s: Session, id: string): Session => {
   const game = currentGame(s);
   if (!game || !s.gameId || s.pause) return s;
-  const state = game.onControl(s.state, id);
-  if (state === s.state) return s;
-  const score = game.status(state).score;
-  const best = Math.max(s.best[s.gameId] ?? 0, score);
-  return { ...s, state, best: { ...s.best, [s.gameId]: best } };
+  return advance(s, game, s.gameId, game.onControl(s.state, id));
+};
+
+// The clock's period: a game with `tickMs` runs only on the game screen, unpaused, not over
+export const clockMs = (s: Session): number | null => {
+  const game = currentGame(s);
+  if (!game?.tickMs || s.screen !== "game" || s.pause || s.state === null) return null;
+  return game.status(s.state).phase === "playing" ? game.tickMs : null;
+};
+
+export const tick = (s: Session): Session => {
+  const game = currentGame(s);
+  if (!game?.tick || !s.gameId || clockMs(s) === null) return s;
+  return advance(s, game, s.gameId, game.tick(s.state));
 };
 
 export const restart = (s: Session, seed: number): Session => {
