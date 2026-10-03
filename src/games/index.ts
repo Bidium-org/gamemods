@@ -1,4 +1,4 @@
-import type { GameId } from "../catalog";
+import type { GameId } from "./catalog";
 import type { Game } from "./game";
 import { morpion } from "./morpion";
 

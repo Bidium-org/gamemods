@@ -1,7 +1,7 @@
 import type { EngineInterface, Register } from "claude-code";
 import { band, WIDEN } from "../src/band";
-import { CATALOG, type GameId } from "../src/catalog";
 import { parseArgs } from "../src/command";
+import { CATALOG, type GameId } from "../src/games/catalog";
 import { pane } from "../src/pane";
 import {
   chooseGame,
@@ -44,8 +44,7 @@ async function openPane($: EngineInterface) {
 
 const bestKey = (id: GameId) => `best:${id}`;
 
-const asScore = (stored: unknown): number =>
-  typeof stored === "number" ? stored : 0;
+const asScore = (stored: unknown): number => (typeof stored === "number" ? stored : 0);
 
 async function loadBest($: EngineInterface): Promise<Session["best"]> {
   const best: Session["best"] = {};
@@ -65,8 +64,7 @@ async function play($: EngineInterface, controlId: string) {
   const before = session;
   commit($, control(session, controlId));
   const { gameId, best } = session;
-  if (gameId && best[gameId] !== before.best[gameId])
-    await saveBest($, gameId, best[gameId] ?? 0);
+  if (gameId && best[gameId] !== before.best[gameId]) await saveBest($, gameId, best[gameId] ?? 0);
 }
 
 export const register: Register = (on) => {
@@ -111,14 +109,12 @@ export const register: Register = (on) => {
   });
 
   on("turn.complete", async ($, e, next) => {
-    if (e.agentId === undefined)
-      commit($, setWorking(pause(session, "turn-end"), false));
+    if (e.agentId === undefined) commit($, setWorking(pause(session, "turn-end"), false));
     return next(e);
   });
 
   on("ui.close", async ($, e, next) => {
-    if (e.id === PANE_ID && e.origin.kind === "person")
-      commit($, closePane(session));
+    if (e.id === PANE_ID && e.origin.kind === "person") commit($, closePane(session));
     return next(e);
   });
 
@@ -151,8 +147,7 @@ export const register: Register = (on) => {
       bodyRows: e.props.scroll.bodyRows,
     };
     return pane($.ui.resolve(e), session, view, {
-      onChoose: async (id) =>
-        commit($, chooseGame(session, id, await $.clock.now())),
+      onChoose: async (id) => commit($, chooseGame(session, id, await $.clock.now())),
       onBack: () => commit($, openMenu(session)),
       onControl: (id) => play($, id),
       onPause: () => commit($, togglePause(session)),

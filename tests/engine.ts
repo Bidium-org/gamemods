@@ -1,6 +1,6 @@
 import type { On } from "claude-code";
 import type { Engine, Mounted } from "claude-code/testing";
-import type { GameId } from "../src/catalog";
+import type { GameId } from "../src/games/catalog";
 
 export type EngineLog = {
   registered: unknown[];

@@ -1,6 +1,6 @@
 import type { RenderElement } from "claude-code";
 import { claudeState } from "./band";
-import { CATALOG, type CatalogEntry, type GameId } from "./catalog";
+import { CATALOG, type CatalogEntry, type GameId } from "./games/catalog";
 import type { Game } from "./games/game";
 import { type MenuElements, menu } from "./menu";
 import { boardText } from "./render/text";

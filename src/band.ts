@@ -1,5 +1,5 @@
 import type { RenderElement } from "claude-code";
-import { CATALOG, type GameId } from "./catalog";
+import { CATALOG, type GameId } from "./games/catalog";
 import { type MenuElements, menu } from "./menu";
 import { pausedGameId, type Session } from "./session";
 

@@ -1,11 +1,10 @@
-import type { GameId } from "./catalog";
+import type { GameId } from "./games/catalog";
 import type { Game } from "./games/game";
 import { GAMES } from "./games/index";
 
 export type Screen = "closed" | "menu" | "game";
 
-export type PauseReason =
-  "manual" | "focus" | "permission" | "turn-end" | "menu";
+export type PauseReason = "manual" | "focus" | "permission" | "turn-end" | "menu";
 
 export type Session = {
   screen: Screen;
@@ -66,12 +65,10 @@ export const chooseGame = (s: Session, id: GameId, seed: number): Session => {
   };
 };
 
-export const openMenu = (s: Session): Session =>
-  pause({ ...s, screen: "menu" }, "menu");
+export const openMenu = (s: Session): Session => pause({ ...s, screen: "menu" }, "menu");
 
 // The game stays in memory: only the pane goes away
-export const closePane = (s: Session): Session =>
-  pause({ ...s, screen: "closed" }, "menu");
+export const closePane = (s: Session): Session => pause({ ...s, screen: "closed" }, "menu");
 
 // A paused game ignores its keys; the best score follows the score up
 export const control = (s: Session, id: string): Session => {
