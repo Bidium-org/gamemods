@@ -106,25 +106,27 @@ const nextRound = (s: EchoState): EchoState => {
   };
 };
 
-const select = (s: EchoState, cell: number): EchoState => {
+const select = (s: EchoState): EchoState => {
   if (s.moment.kind !== "answer") return s;
+  const cell = s.cursor;
   const expected = s.sequence[s.moment.given] ?? 0;
   if (cell !== expected) {
-    return { ...s, cursor: cell, flash: null, moment: { kind: "over", reason: "wrong", expected } };
+    return {
+      ...s,
+      flash: null,
+      moment: { kind: "over", reason: "wrong", expected },
+    };
   }
-  const answered = { ...s, cursor: cell, flash: { cell, left: FLASH_TICKS } };
+  const answered = { ...s, flash: { cell, left: FLASH_TICKS } };
   const given = s.moment.given + 1;
   return given === s.sequence.length
     ? nextRound(answered)
     : { ...answered, moment: { ...s.moment, given } };
 };
 
-const CELL_CONTROL = "cell-";
-
 const onControl = (s: EchoState, id: string): EchoState => {
   if (s.moment.kind !== "answer") return s;
-  if (id === "select") return select(s, s.cursor);
-  if (id.startsWith(CELL_CONTROL)) return select(s, Number(id.slice(CELL_CONTROL.length)));
+  if (id === "select") return select(s);
   const { side } = gridOf(s.round);
   const cursor = moveCursor(s.cursor, id, side, side);
   return cursor === s.cursor ? s : { ...s, cursor };
@@ -142,7 +144,11 @@ const advanceMoment = (s: EchoState): Moment => {
   if (moment.kind === "answer") {
     const left = moment.left - 1;
     if (left > 0) return { ...moment, left };
-    return { kind: "over", reason: "timeout", expected: s.sequence[moment.given] ?? 0 };
+    return {
+      kind: "over",
+      reason: "timeout",
+      expected: s.sequence[moment.given] ?? 0,
+    };
   }
   return moment;
 };
@@ -171,12 +177,8 @@ const tile = (s: EchoState, i: number): Cell => {
     return { ch: "", bg: i === moment.expected ? COLORS.wrong : COLORS.tile };
   }
   if (i === playbackCell(s) || i === s.flash?.cell) return { ch: "", bg: COLORS.lit };
-  if (moment.kind === "watch") return { ch: "", bg: COLORS.tile };
-  return {
-    ch: "",
-    bg: i === s.cursor ? COLORS.cursor : COLORS.tile,
-    control: `${CELL_CONTROL}${i}`,
-  };
+  const isCursor = moment.kind === "answer" && i === s.cursor;
+  return { ch: "", bg: isCursor ? COLORS.cursor : COLORS.tile };
 };
 
 const momentLine = (s: EchoState): string => {

@@ -97,6 +97,14 @@ export const clockMs = (s: Session): number | null => {
   return game.status(s.state).phase === "playing" ? game.tickMs : null;
 };
 
+// What the game screen shows of the game: a change that keeps it needs no redraw
+export const gameView = (s: Session): string => {
+  const game = currentGame(s);
+  return game && s.state !== null
+    ? JSON.stringify([game.board(s.state), game.status(s.state)])
+    : "";
+};
+
 export const tick = (s: Session): Session => {
   const game = currentGame(s);
   if (!game?.tick || !s.gameId || clockMs(s) === null) return s;

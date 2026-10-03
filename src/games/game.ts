@@ -1,7 +1,7 @@
 import type { PictureBoard } from "./hogzzle/board";
 
 export type Control = { id: string; label: string; hotkey: string };
-export type Cell = { ch: string; fg?: string; bg?: string; control?: string };
+export type Cell = { ch: string; fg?: string; bg?: string };
 
 // Every tile is `cell` wide and high, in layout cells, `gap` apart. Desktop draws text in a
 // proportional font: only fixed-size tiles keep a grid aligned there

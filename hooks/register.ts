@@ -8,6 +8,7 @@ import {
   clockMs,
   closePane,
   control,
+  gameView,
   hideBand,
   initialSession,
   observeFocus,
@@ -33,15 +34,24 @@ function syncClock($: EngineInterface) {
   const ms = clockMs(session);
   if ((clock?.ms ?? null) === ms) return;
   clock?.timer.cancel();
-  clock = ms === null ? null : { ms, timer: $.clock.every(ms, () => update($, tick(session))) };
+  clock = ms === null ? null : { ms, timer: $.clock.every(ms, () => onTick($)) };
 }
 
+function onTick($: EngineInterface) {
+  const next = tick(session);
+  void update($, next, { redraw: gameView(next) !== gameView(session) });
+}
+
+type CommitOptions = { redraw?: boolean };
+
 // The engine reads `$` only at `$.noun.event(...)` call sites and in top-level functions like this
-function commit($: EngineInterface, next: Session) {
-  if (next !== session) {
-    session = next;
-    $.ui.invalidate("ui.render");
-  }
+function commit(
+  $: EngineInterface,
+  next: Session,
+  { redraw = next !== session }: CommitOptions = {},
+) {
+  session = next;
+  if (redraw) $.ui.invalidate("ui.render");
   syncClock($);
 }
 
@@ -76,9 +86,9 @@ async function saveBest($: EngineInterface, id: GameId, score: number) {
 }
 
 // A change that can raise the score: a key, a tick
-async function update($: EngineInterface, next: Session) {
+async function update($: EngineInterface, next: Session, options?: CommitOptions) {
   const before = session;
-  commit($, next);
+  commit($, next, options);
   const { gameId, best } = session;
   if (gameId && best[gameId] !== before.best[gameId]) await saveBest($, gameId, best[gameId] ?? 0);
 }

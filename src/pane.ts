@@ -169,7 +169,6 @@ export function pane(
   }
   const drawn = drawBoard(els, view.surface, game.board(session.state), {
     dimmed: session.pause !== null,
-    onPress: actions.onControl,
   });
   if (!drawn) {
     return root([
