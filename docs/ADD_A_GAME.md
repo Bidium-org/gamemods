@@ -5,7 +5,7 @@ A game is a pure object: state in, state out, no `$`. Everything it touches live
 ## Steps
 
 1. **Catalog.** In `src/games/catalog.ts`, add the id to `GameId` and an entry to `CATALOG`. Keep `status: "soon"` until the game is playable.
-2. **Game.** Write `src/games/<id>.ts` exporting a `Game<S>` (contract in `src/games/game.ts`). `src/games/morpion.ts` is the reference.
+2. **Game.** Create `src/games/<id>/` and write `src/games/<id>/<id>.ts` exporting a `Game<S>` (contract in `src/games/game.ts`). Everything the game owns lives in that folder. `src/games/morpion/morpion.ts` is the reference.
 3. **Registry.** Add it to `GAMES` in `src/games/index.ts`, then set `status: "available"`.
 
 The session already handles the menu, `p` pause, `r` restart, `q` back to the menu, automatic pauses and the best score.

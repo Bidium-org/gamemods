@@ -8,7 +8,7 @@ A Claude Code mod: a game menu in the band above the prompt, the game in a pane.
 .claude-plugin/   → plugin and marketplace manifests (the repo is both); types/ is generated, ignored
 hooks/            → the single entry point: wires engine hooks to the session
 src/              → session state and transitions, band, pane and menu views, /gameboy parsing
-src/games/        → everything a game owns: catalog, contract, registry, one file per game
+src/games/        → contract, catalog, registry and helpers shared by games; one folder per game
 src/render/       → Board to elements (Text today)
 tests/            → kit tests run by `claude plugin test`; shared engine stub in tests/engine.ts
 docs/             → this file, ADD_A_GAME.md
@@ -40,7 +40,7 @@ Games are pure (state in, state out, no `$`). How to add one: `docs/ADD_A_GAME.m
 **A key press.**
 
 1. A `Button` with a `hotkey` in `src/pane.ts` → `play()` in `hooks/register.ts`.
-2. `control()` in `src/session.ts` → the game's `onControl()` (`src/games/<id>.ts`), ignored while paused. The session's best score follows the game's score up.
+2. `control()` in `src/session.ts` → the game's `onControl()` (`src/games/<id>/<id>.ts`), ignored while paused. The session's best score follows the game's score up.
 3. If the best score rose, `saveBest()` re-reads the store and writes only a higher value: `$.store` is shared by every session of the machine.
 4. `commit()` invalidates; the next draw goes through `boardText()` in `src/render/text.ts`.
 
