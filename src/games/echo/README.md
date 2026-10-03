@@ -6,7 +6,6 @@ A memory game. The cells of a sequence light up one after the other, then you re
 
 | Key       | Action                           |
 | :-------- | :------------------------------- |
-| click     | Select a cell                    |
 | `w a s d` | Move the cursor                  |
 | `e`       | Select the cell under the cursor |
 
@@ -19,8 +18,7 @@ The score is the number of rounds passed. A pause in the middle of a round repla
 Part of the manual protocol of [CONTRIBUTING.md](../../../CONTRIBUTING.md#manual-protocol):
 
 - The playback lights the cells one by one, then the countdown runs.
-- Cells answer to a click. Note whether the first click in an unfocused pane also selects the cell, or only gives the focus.
-- The same round played with `w a s d` and `e`.
+- A round played with `w a s d` and `e`, no key lost.
 - A wrong cell and a timeout both end the game, the expected cell in red.
 - `p` during the answer, then `p` again: the round replays with 30 seconds.
 - Reach round 4 to see the 2×2 grid split into 3×3.
