@@ -1,5 +1,6 @@
 import { expect, test } from "claude-code/testing";
 import { twentyFortyEight as game } from "../src/games/2048/2048";
+import { cellBoard } from "../src/games/2048/cells";
 import type { TwentyFortyEightState } from "../src/games/2048/rules";
 
 const SEED = 1;
@@ -92,9 +93,23 @@ test("a grid with no move left is lost and ignores the keys", () => {
   }
 });
 
-test("the board draws cells: 4 by 4 tiles, the value as glyph, empty cells blank", () => {
-  const board = game.board(withGrid([[2, _, _, _], EMPTY_ROW, EMPTY_ROW, [_, _, _, 131072]]));
-  expect(board.kind).toBe("cells");
+test("the board is the grid and the score, drawn as tiles", () => {
+  const s = game.init(SEED);
+  expect(game.board(s)).toEqual({ kind: "tiles", grid: s.grid, score: 0 });
+});
+
+test("a move animates; a key that moves nothing does not", () => {
+  const s = withGrid([[_, _, _, 2], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW]);
+  const moved = game.animation?.play(s, "left");
+  expect(moved?.state).toEqual(game.onControl(s, "left"));
+  expect(moved?.motion).toMatchObject({ slides: [{ value: 2 }] });
+  const stuck = withGrid([[2, 4, _, _], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW]);
+  expect(game.animation?.play(stuck, "left")).toEqual({ state: stuck, motion: null });
+  expect(game.animation?.play(s, "place")).toEqual({ state: s, motion: null });
+});
+
+test("the cell fallback: 4 by 4 tiles, the value as glyph, empty cells blank", () => {
+  const board = cellBoard([[2, _, _, _], EMPTY_ROW, EMPTY_ROW, [_, _, _, 131072]]);
   expect(board.rows.map((row) => row.map((c) => c.ch))).toEqual([
     ["2", "", "", ""],
     ["", "", "", ""],

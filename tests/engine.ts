@@ -96,7 +96,7 @@ export async function openFromBand($: Engine, surface: Surface, id: GameId) {
   await band.unmount();
 }
 
-export const pressAll = async (ui: Mounted<Surface, "Pane">, keys: string[]) => {
+export const pressAll = async <S extends Surface>(ui: Mounted<S, "Pane">, keys: string[]) => {
   for (const key of keys) await ui.press({ key });
 };
 

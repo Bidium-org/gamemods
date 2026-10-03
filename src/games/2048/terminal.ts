@@ -1,0 +1,25 @@
+import type { ElementTable, RenderElement } from "claude-code";
+import type { Draw } from "../../render/board";
+import type { TileBoard } from "./board";
+import type { BoardProps } from "./client";
+import type { Motion } from "./rules";
+
+export type ClientElements = Pick<ElementTable<"terminal">, "Client">;
+
+// `module` is read off this file's source: a literal, relative to this file
+export const tilesClient = (
+  { Client }: ClientElements,
+  board: TileBoard,
+  { dimmed, motion, moveId, room }: Draw,
+): RenderElement =>
+  Client({
+    key: "board-2048",
+    module: "./client.ts",
+    props: {
+      grid: board.grid,
+      motion: motion as Motion | null,
+      moveId,
+      rows: room.rows,
+      dimmed,
+    } satisfies BoardProps,
+  });

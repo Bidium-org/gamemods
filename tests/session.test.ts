@@ -1,4 +1,5 @@
 import { expect, test } from "claude-code/testing";
+import { ANIMATION_MS } from "../src/games/2048/svg";
 import type { MorpionState } from "../src/games/morpion/morpion";
 import {
   chooseGame,
@@ -6,11 +7,13 @@ import {
   control,
   hideBand,
   initialSession,
+  motionMs,
   observeFocus,
   openMenu,
   pause,
   restart,
   type Session,
+  settle,
   toggleBand,
   togglePause,
 } from "../src/session";
@@ -26,6 +29,8 @@ const placeAt = (s: Session, i: number) =>
 const winOnce = (s: Session) => [0, 8, 6, 3].reduce(placeAt, s);
 
 const morpionState = (s: Session) => s.state as MorpionState;
+
+const moved2048 = () => control(chooseGame(initialSession, "2048", SEED), "up");
 
 test("the band folds and unfolds", () => {
   const open = toggleBand(initialSession);
@@ -130,4 +135,54 @@ test("losing the focus pauses; getting it back does not resume", () => {
 test("a game opened without the focus is not paused", () => {
   const s = morpion();
   expect(observeFocus(s, false)).toBe(s);
+});
+
+test("a 2048 move keeps its motion; a Morpion move has none", () => {
+  expect(moved2048().motion).toMatchObject({ slides: expect.any(Array) });
+  expect(control(morpion(), "up").motion).toBeNull();
+});
+
+test("only a move that changes the state counts as a new move", () => {
+  const moved = moved2048();
+  expect(moved.moveId).toBe(1);
+  expect(control(moved, "place")).toBe(moved);
+  const again = control(moved, "left");
+  expect(again.moveId).toBe(2);
+  expect(control(again, "left")).toBe(again);
+  expect(control(togglePause(again), "down").moveId).toBe(2);
+  expect(control(morpion(), "up").moveId).toBe(1);
+});
+
+test("settling, restart and the menu leave the move count as it was", () => {
+  const moved = moved2048();
+  expect(settle(moved).moveId).toBe(1);
+  expect(restart(moved, SEED).moveId).toBe(1);
+  expect(chooseGame(openMenu(moved), "2048", SEED).moveId).toBe(1);
+});
+
+test("settling clears the motion only, and twice changes nothing", () => {
+  const moved = moved2048();
+  const settled = settle(moved);
+  expect(settled).toEqual({ ...moved, motion: null });
+  expect(settle(settled)).toBe(settled);
+});
+
+test("a pause keeps the motion", () => {
+  const moved = moved2048();
+  expect(togglePause(moved).motion).toBe(moved.motion);
+  expect(pause(moved, "focus").motion).toBe(moved.motion);
+});
+
+test("restart, menu, closing and switching game clear the motion", () => {
+  const moved = moved2048();
+  expect(restart(moved, SEED).motion).toBeNull();
+  expect(openMenu(moved).motion).toBeNull();
+  expect(closePane(moved).motion).toBeNull();
+  expect(chooseGame(moved, "morpion", SEED).motion).toBeNull();
+});
+
+test("the motion is drawn for the game's animation time, a game without one never", () => {
+  expect(motionMs(moved2048())).toBe(ANIMATION_MS);
+  expect(motionMs(settle(moved2048()))).toBeNull();
+  expect(motionMs({ ...morpion(), motion: {} })).toBeNull();
 });

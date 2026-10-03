@@ -1,6 +1,6 @@
-import type { Cell, CellBoard, Game } from "../game";
+import type { Game, Play } from "../game";
 import { MOVES } from "../grid";
-import { digitColor, PALETTE, tileFill } from "./palette";
+import type { TileBoard } from "./board";
 import {
   DIRECTIONS,
   type Direction,
@@ -10,26 +10,23 @@ import {
   newGame,
   type TwentyFortyEightState,
 } from "./rules";
+import { ANIMATION_MS } from "./svg";
 
 const isDirection = (id: string): id is Direction => DIRECTIONS.some((d) => d === id);
 
-const tile = (value: number): Cell => {
-  if (value === 0) return { ch: "", bg: PALETTE.empty };
-  const fill = tileFill(value);
-  return { ch: String(value), fg: digitColor(fill), bg: fill };
+const play = (s: TwentyFortyEightState, id: string): Play<TwentyFortyEightState> => {
+  if (!isDirection(id)) return { state: s, motion: null };
+  const { state, motion } = move(s, id);
+  return { state, motion: motion ?? null };
 };
 
-export const twentyFortyEight: Game<TwentyFortyEightState, CellBoard> = {
+export const twentyFortyEight: Game<TwentyFortyEightState, TileBoard> = {
   controls: MOVES,
   size: { columns: 38, rows: 26 },
   init: (seed) => newGame(seed),
-  onControl: (s, id) => (isDirection(id) ? move(s, id).state : s),
-  board: (s) => ({
-    kind: "cells",
-    cell: { width: 8, height: 3 },
-    gap: 1,
-    rows: s.grid.map((row) => row.map(tile)),
-  }),
+  onControl: (s, id) => play(s, id).state,
+  animation: { ms: ANIMATION_MS, play },
+  board: (s) => ({ kind: "tiles", grid: s.grid, score: s.score }),
   status: (s) => {
     if (!hasMovesLeft(s.grid)) {
       return { phase: "lost", score: s.score, line: "No moves left · R to play again" };

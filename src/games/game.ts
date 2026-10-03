@@ -1,4 +1,5 @@
 import type { JsonValue } from "claude-code";
+import type { TileBoard } from "./2048/board";
 import type { PictureBoard } from "./hogzzle/board";
 
 export type Control = { id: string; label: string; hotkey: string };
@@ -13,7 +14,7 @@ export type CellBoard = {
   rows: Cell[][];
 };
 
-export type Board = CellBoard | PictureBoard;
+export type Board = CellBoard | PictureBoard | TileBoard;
 
 export type Phase = "playing" | "won" | "lost" | "draw";
 
