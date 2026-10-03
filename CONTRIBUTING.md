@@ -46,8 +46,8 @@ Run it on Desktop, then in a terminal, for any change to the band, the pane, a g
 
 1. **Band:** the folded `GAMEBOY` line shows; **Games** expands it by click and by Tab then Enter; `✕` hides it for the session.
 2. **Pane:** it opens on the right. Note whether it gets the focus at open; one click inside gives it the keyboard.
-3. **Command:** `/gameboy`, `/gameboy morpion`, an unknown id (opens the menu), `/gameboy stop`. No line is added to the transcript.
-4. **Game:** a win, a loss and a draw with `w a s d` and `e`; `r` restarts; `q` back to the menu, then choosing the game resumes it.
+3. **Command:** `/gameboy`, `/gameboy <game>` for each game, an unknown id (opens the menu), `/gameboy stop`. No line is added to the transcript.
+4. **Game:** the manual checks of each game's README (`src/games/<id>/README.md`); `r` restarts; `q` back to the menu, then choosing the game resumes it.
 5. **Permission dialog:** with the game focused, ask Claude for a command that needs approval (writing a file under `/tmp` with Bash). The game is paused before the dialog shows and no game key reaches the dialog.
 6. **Auto mode:** a command the classifier approves shows no dialog and does not pause the game.
 7. **Turn end:** "Claude is working" during the turn, then "Paused: Claude answered".
