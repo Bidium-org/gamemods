@@ -1,4 +1,4 @@
-export type GameId = "morpion" | "hogzzle" | "echo";
+export type GameId = "morpion" | "hogzzle" | "echo" | "2048";
 type GameStatus = "available" | "soon";
 
 export type CatalogEntry = {
@@ -25,6 +25,12 @@ export const CATALOG: readonly CatalogEntry[] = [
     id: "echo",
     name: "Echo",
     tagline: "Repeat the sequence, the grid grows",
+    status: "available",
+  },
+  {
+    id: "2048",
+    name: "2048",
+    tagline: "Slide the tiles, reach 2048",
     status: "available",
   },
 ];
