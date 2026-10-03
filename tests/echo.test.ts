@@ -6,6 +6,8 @@ const LEAD = 8;
 const ANSWER = 300;
 const LIT = "#5fafff";
 const WRONG = "#ff5f5f";
+const TILE = "#2e2e2e";
+const CURSOR = "#5a5a5a";
 
 const ticks = (s: EchoState, n: number) =>
   Array.from({ length: n }).reduce<EchoState>((acc) => echo.tick?.(acc) ?? acc, s);
@@ -22,10 +24,11 @@ const ticksUntilAnswer = (s: EchoState): { s: EchoState; count: number } => {
 
 const toAnswer = (s: EchoState) => ticksUntilAnswer(s).s;
 
-const click = (s: EchoState, cell: number) => echo.onControl(s, `cell-${cell}`);
+// Selects `cell`, the cursor moved there directly
+const selectAt = (s: EchoState, cell: number) => echo.onControl({ ...s, cursor: cell }, "select");
 
-// Watches the playback, then repeats it by clicks
-const passRound = (s: EchoState) => toAnswer(s).sequence.reduce(click, toAnswer(s));
+// Watches the playback, then repeats it
+const passRound = (s: EchoState) => toAnswer(s).sequence.reduce(selectAt, toAnswer(s));
 
 const passRounds = (n: number, s = echo.init(SEED)) =>
   Array.from({ length: n }).reduce<EchoState>((acc) => passRound(acc), s);
@@ -60,23 +63,13 @@ test("a step is lit 400 ms then dark 200 ms, after the lead-in", () => {
   expect(ticksUntilAnswer(s).count).toBe(LEAD + 6);
 });
 
-test("input is ignored and cells are not pressable during the playback", () => {
+test("input is ignored and the cursor hidden during the playback", () => {
   const s = echo.init(SEED);
-  for (const id of ["select", "cell-0", "cell-1", "right", "down"]) {
+  for (const id of ["select", "right", "down"]) {
     expect(echo.onControl(s, id)).toBe(s);
   }
-  expect(
-    echo
-      .board(s)
-      .rows.flat()
-      .some((c) => c.control),
-  ).toBe(false);
-  expect(
-    echo
-      .board(toAnswer(s))
-      .rows.flat()
-      .every((c) => c.control),
-  ).toBe(true);
+  expect(bgAt(s, s.cursor)).toBe(TILE);
+  expect(bgAt(toAnswer(s), s.cursor)).toBe(CURSOR);
 });
 
 test("the cursor moves with w a s d, stops at the edges, and e selects under it", () => {
@@ -128,7 +121,7 @@ test("a selected cell lights up briefly", () => {
   const s = passRounds(1);
   const answering = toAnswer(s);
   const [first = 0] = answering.sequence;
-  const selected = click(answering, first);
+  const selected = selectAt(answering, first);
   expect(bgAt(selected, first)).toBe(LIT);
   expect(bgAt(ticks(selected, 3), first)).not.toBe(LIT);
 });
@@ -136,14 +129,14 @@ test("a selected cell lights up briefly", () => {
 test("a wrong cell ends the game and shows the expected cell in red", () => {
   const s = toAnswer(passRounds(2));
   const [expected = 0] = s.sequence;
-  const over = click(s, otherThan(expected));
+  const over = selectAt(s, otherThan(expected));
   expect(echo.status(over)).toEqual({
     phase: "lost",
     score: 2,
     line: "Wrong cell · round 3 · 2×2",
   });
   expect(bgAt(over, expected)).toBe(WRONG);
-  expect(echo.onControl(over, `cell-${expected}`)).toBe(over);
+  expect(echo.onControl(over, "select")).toBe(over);
   expect(echo.tick?.(over)).toBe(over);
 });
 
@@ -159,7 +152,7 @@ test("the answer has 30 seconds, then the game ends on the next expected cell", 
 test("a selection does not reset the 30 seconds", () => {
   const s = toAnswer(passRounds(1));
   const [first = 0, second = 0] = s.sequence;
-  const oneGiven = click(ticks(s, 100), first);
+  const oneGiven = selectAt(ticks(s, 100), first);
   const late = ticks(oneGiven, ANSWER - 100);
   expect(late.moment).toEqual({ kind: "over", reason: "timeout", expected: second });
 });
@@ -167,7 +160,7 @@ test("a selection does not reset the 30 seconds", () => {
 test("resuming mid-round replays from the first step with a full answer time", () => {
   const s = toAnswer(passRounds(1));
   const [first = 0] = s.sequence;
-  const halfway = click(ticks(s, 200), first);
+  const halfway = selectAt(ticks(s, 200), first);
   const resumed = echo.resume?.(halfway) ?? halfway;
   expect(resumed.moment).toEqual({ kind: "watch", at: -LEAD });
   expect(ticksUntilAnswer(resumed).s.moment).toEqual({ kind: "answer", given: 0, left: ANSWER });
@@ -175,6 +168,6 @@ test("resuming mid-round replays from the first step with a full answer time", (
 
 test("resuming an ended game changes nothing", () => {
   const s = toAnswer(echo.init(SEED));
-  const over = click(s, otherThan(s.sequence[0] ?? 0));
+  const over = selectAt(s, otherThan(s.sequence[0] ?? 0));
   expect(echo.resume?.(over)).toBe(over);
 });
