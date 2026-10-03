@@ -6,7 +6,7 @@ One game today: Morpion (tic-tac-toe) against a bot. Snake, Tetris and Sudoku ar
 
 ## Requirements
 
-- Claude Code 2.1.286 or later, with mods support.
+- Claude Code 2.1.287 or later (mods are on by default from that version).
 - A local session in the Code tab of Claude Code Desktop, or in a terminal.
 
 ## Install
