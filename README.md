@@ -64,7 +64,7 @@ Each game has its own score, described in its README. The best score of each gam
 
 - Nothing is drawn in Desktop WSL sessions, the VS Code chat panel, `claude -p` or cloud sessions.
 - On Desktop, `/gamemods` typed during a turn waits for the turn to end. During a turn, use the **Games** button instead.
-- Tested on Claude Code 2.1.286 (Desktop) and 2.1.287 (terminal). A newer build can behave differently.
+- Tested on Claude Code Desktop 2.19675.0 and terminal 2.1.288. A newer build can behave differently.
 
 ## Contributing
 
