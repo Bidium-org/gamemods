@@ -126,7 +126,6 @@ const init = (seed: number): MorpionState => ({
 
 // `mistakeRate` 0 is the strict bot, beaten only by a fork
 export const createMorpion = (mistakeRate: number): Game<MorpionState> => ({
-  id: "morpion",
   controls: [
     { id: "up", label: "Up", hotkey: "w" },
     { id: "left", label: "Left", hotkey: "a" },

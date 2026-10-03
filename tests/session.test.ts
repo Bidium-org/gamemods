@@ -69,6 +69,17 @@ test("closing the pane pauses the game and keeps it in memory", () => {
   expect(s).toMatchObject({ screen: "closed", gameId: "morpion", pause: "menu" });
 });
 
+// Else the next opening, never focused on Desktop, would read as a focus loss
+test("closing the pane forgets its focus", () => {
+  const s = closePane(observeFocus(morpion(), true));
+  expect(s.hasFocus).toBe(false);
+});
+
+test("a key the game ignores leaves the session as it was", () => {
+  const won = winOnce(morpion());
+  expect(control(won, "up")).toBe(won);
+});
+
 test("hiding the band keeps the screen and the game", () => {
   const playing = morpion();
   expect(hideBand(playing)).toEqual({ ...playing, bandHidden: true });

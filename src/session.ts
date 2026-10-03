@@ -46,7 +46,7 @@ export const toggleBand = (s: Session): Session => ({
 
 export const hideBand = (s: Session): Session => ({ ...s, bandHidden: true });
 
-// The first reason wns; nothing to pause without a game
+// The first reason wins; nothing to pause without a game
 export const pause = (s: Session, reason: PauseReason): Session =>
   s.pause || s.state === null ? s : { ...s, pause: reason };
 
@@ -67,14 +67,16 @@ export const chooseGame = (s: Session, id: GameId, seed: number): Session => {
 
 export const openMenu = (s: Session): Session => pause({ ...s, screen: "menu" }, "menu");
 
-// The game stays in memory: only the pane goes away
-export const closePane = (s: Session): Session => pause({ ...s, screen: "closed" }, "menu");
+// The game stays in memory: only the pane goes away, and its focus with it
+export const closePane = (s: Session): Session =>
+  pause({ ...s, screen: "closed", hasFocus: false }, "menu");
 
 // A paused game ignores its keys; the best score follows the score up
 export const control = (s: Session, id: string): Session => {
   const game = currentGame(s);
   if (!game || !s.gameId || s.pause) return s;
   const state = game.onControl(s.state, id);
+  if (state === s.state) return s;
   const score = game.status(state).score;
   const best = Math.max(s.best[s.gameId] ?? 0, score);
   return { ...s, state, best: { ...s.best, [s.gameId]: best } };

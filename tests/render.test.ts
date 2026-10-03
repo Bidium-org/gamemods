@@ -2,21 +2,7 @@ import { expect, test } from "claude-code/testing";
 import type { Board } from "../src/games/game";
 import { morpion } from "../src/games/morpion";
 import { boardText } from "../src/render/text";
-
-const PANE = {
-  plugin: "gameboy",
-  component: "Pane",
-  requestId: "gameboy",
-  viewport: { columns: 106, rows: 52, isFullscreen: true },
-  props: {
-    title: "Gameboy",
-    isFocused: true,
-    bodyColumns: 38,
-    placement: "dock",
-    scroll: { offset: 0, bodyRows: 46 },
-    view: {},
-  },
-} as const;
+import { PANE } from "./engine";
 
 const BOARD: Board = {
   cell: { width: 2, height: 1 },

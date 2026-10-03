@@ -1,21 +1,7 @@
 import { expect, test } from "claude-code/testing";
 import { menu } from "../src/menu";
 import { initialSession } from "../src/session";
-
-const PANE = {
-  plugin: "gameboy",
-  component: "Pane",
-  requestId: "gameboy",
-  viewport: { columns: 106, rows: 52, isFullscreen: true },
-  props: {
-    title: "Gameboy",
-    isFocused: true,
-    bodyColumns: 38,
-    placement: "dock",
-    scroll: { offset: 0, bodyRows: 46 },
-    view: {},
-  },
-} as const;
+import { PANE } from "./engine";
 
 for (const surface of ["desktop", "terminal"] as const) {
   test(`the menu draws one button per game on ${surface}, name only`, async ($, on) => {

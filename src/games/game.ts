@@ -14,7 +14,6 @@ export type Phase = "playing" | "won" | "lost" | "draw";
 export type GameStatus = { phase: Phase; score: number; line: string };
 
 export interface Game<S> {
-  id: string;
   controls: Control[];
   // Pane body below which the game shows "Widen the window"
   size: { columns: number; rows: number };
