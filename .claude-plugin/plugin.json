@@ -1,6 +1,10 @@
 {
   "name": "gameboy",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A game console playable while Claude works.",
-  "author": { "name": "Tanguy Pauvret" }
+  "author": { "name": "Birium", "email": "bidiumdev@gmail.com" },
+  "homepage": "https://github.com/Birium/claude-gameboy",
+  "repository": "https://github.com/Birium/claude-gameboy",
+  "license": "MIT",
+  "keywords": ["mod", "game", "tic-tac-toe"]
 }

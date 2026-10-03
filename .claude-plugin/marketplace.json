@@ -2,7 +2,8 @@
   "name": "gameboy-mods",
   "description": "A game console playable while Claude works",
   "owner": {
-    "name": "Tanguy Pauvret"
+    "name": "Birium",
+    "email": "bidiumdev@gmail.com"
   },
   "plugins": [
     {
