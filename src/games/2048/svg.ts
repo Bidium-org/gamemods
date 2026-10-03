@@ -92,7 +92,7 @@ ${dimmed ? `<rect y="${GAIN_ROOM}" width="${BOARD}" height="${BOARD}" rx="20" fi
 </svg>`;
 }
 
-// Unkeyed: Desktop 2.19675.0 redrew an unkeyed Svg at each new source, unlike a keyed one
+// Unkeyed: Desktop 2.19675.0 takes each new source of an unkeyed Svg
 export const tilesSvg = (
   { Svg }: SvgElements,
   board: TileBoard,
