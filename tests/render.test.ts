@@ -112,6 +112,25 @@ for (const surface of ["desktop", "terminal"] as const) {
     await ui.unmount();
   });
 
+  test(`a cell with a control draws a button as wide as its tile on ${surface}`, async ($, on) => {
+    const board: CellBoard = {
+      kind: "cells",
+      cell: { width: 5, height: 3 },
+      rows: [[{ ch: "", bg: "#2e2e2e", control: "cell-0" }, { ch: "" }]],
+    };
+    on("session.start", () => ({ cwd: "/work" }));
+    on("ui.render", ($, e) => boardText($.ui.resolve(e), board, { onPress: () => {} }));
+    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+
+    const ui = await $.ui.mount({ ...PANE, surface });
+    expect(await ui.find({ key: "board-cell-0" })).toMatchObject({
+      type: "Button",
+      props: { label: "     ", plain: true },
+    });
+    expect(await ui.findAll({ type: "Button" })).toHaveLength(1);
+    await ui.unmount();
+  });
+
   test(`the Morpion board draws as a valid tree on ${surface}`, async ($, on) => {
     on("session.start", () => ({ cwd: "/work" }));
     on("ui.render", ($, e) => boardText($.ui.resolve(e), morpion.board(morpion.init(1))));
