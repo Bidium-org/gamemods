@@ -6,6 +6,7 @@
   "homepage": "https://github.com/Birium/gamemods",
   "repository": "https://github.com/Birium/gamemods",
   "license": "MIT",
+  "icon": "./assets/icon.png",
   "keywords": [
     "claude-code",
     "claude-code-plugin",
