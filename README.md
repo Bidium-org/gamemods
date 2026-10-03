@@ -10,6 +10,7 @@ Rules, keys and score of each game are in its README.
 | :------------------------------------- | :----------------------------------------------- | :---------------- |
 | [Morpion](src/games/morpion/README.md) | Tic-tac-toe against a bot                        | Desktop, terminal |
 | [Hogzzle](src/games/hogzzle/README.md) | Swap the tiles until PostHog's hedgehog is whole | Desktop           |
+| [Echo](src/games/echo/README.md)       | Repeat a growing sequence of lit cells           | Desktop, terminal |
 
 ## Requirements
 

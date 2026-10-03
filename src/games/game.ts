@@ -28,7 +28,10 @@ export interface Game<S, B extends Board = Board> {
   // `r`; absent, the session calls `init(seed)`
   restart?(s: S, seed: number): S;
   onControl(s: S, id: string): S;
+  // Called every `tickMs` while the game runs: never paused, never off the game screen
   tick?(s: S): S;
+  // Called when a pause lifts; absent, the game goes on as it was left
+  resume?(s: S): S;
   board(s: S): B;
   status(s: S): GameStatus;
 }
