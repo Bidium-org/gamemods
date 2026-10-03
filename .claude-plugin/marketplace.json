@@ -1,5 +1,5 @@
 {
-  "name": "gameboy-mods",
+  "name": "gamemods",
   "description": "A game console playable while Claude works",
   "owner": {
     "name": "Birium",
@@ -7,7 +7,7 @@
   },
   "plugins": [
     {
-      "name": "gameboy",
+      "name": "gamemods",
       "source": "./",
       "description": "A menu in the band above the prompt, a game in a pane. Zero model calls."
     }
