@@ -44,9 +44,9 @@ claude plugin validate .claude-plugin/plugin.json
 
 Run it on Desktop, then in a terminal, for any change to the band, the pane, a game or the pause policy.
 
-1. **Band:** the folded `GAMEBOY` line shows; **Games** expands it by click and by Tab then Enter; `✕` hides it for the session.
+1. **Band:** the folded `GAMEMODS` line shows; **Games** expands it by click and by Tab then Enter; `✕` hides it for the session.
 2. **Pane:** it opens on the right. Note whether it gets the focus at open; one click inside gives it the keyboard.
-3. **Command:** `/gameboy`, `/gameboy <game>` for each game, an unknown id (opens the menu), `/gameboy stop`. No line is added to the transcript.
+3. **Command:** `/gamemods`, `/gamemods <game>` for each game, an unknown id (opens the menu), `/gamemods stop`. No line is added to the transcript.
 4. **Game:** the manual checks of each game's README (`src/games/<id>/README.md`); `r` restarts; `q` back to the menu, then choosing the game resumes it.
 5. **Permission dialog:** with the game focused, ask Claude for a command that needs approval (writing a file under `/tmp` with Bash). The game is paused before the dialog shows and no game key reaches the dialog.
 6. **Auto mode:** a command the classifier approves shows no dialog and does not pause the game.
@@ -61,7 +61,7 @@ Run it on Desktop, then in a terminal, for any change to the band, the pane, a g
 | Surface  | Where                                                                                 |
 | :------- | :------------------------------------------------------------------------------------ |
 | Desktop  | `~/Library/Logs/Claude/claude.ai-web.log` (macOS), lines `engine surface: ...`        |
-| Terminal | `claude --debug-file <file>`, lines `hooks module gameboy@inline loaded ...`          |
+| Terminal | `claude --debug-file <file>`, lines `hooks module gamemods@inline loaded ...`         |
 
 ## Known symptoms
 
