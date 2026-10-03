@@ -78,6 +78,7 @@ function gameScreen(
             key: `control-${c.id}`,
             label: c.label,
             hotkey: c.hotkey,
+            plain: true,
             onPress: () => actions.onControl(c.id),
           }),
         ),
@@ -91,15 +92,23 @@ function gameScreen(
             key: "pane-pause",
             label: session.pause ? "Resume" : "Pause",
             hotkey: "p",
+            plain: true,
             onPress: actions.onPause,
           }),
           Button({
             key: "pane-restart",
             label: "Restart",
             hotkey: "r",
+            plain: true,
             onPress: actions.onRestart,
           }),
-          Button({ key: "pane-back", label: "Menu", hotkey: "q", onPress: actions.onBack }),
+          Button({
+            key: "pane-back",
+            label: "Menu",
+            hotkey: "q",
+            plain: true,
+            onPress: actions.onBack,
+          }),
         ],
       }),
     ],
@@ -109,7 +118,11 @@ function gameScreen(
     alignSelf: "flex-start",
     borderStyle: "round",
     ...(session.pause ? { borderColor: PAUSE_COLOR } : { borderDimColor: true }),
-    children: [boardText(els, game.board(session.state), { dimmed: session.pause !== null })],
+    children: [
+      boardText(els, game.board(session.state), {
+        dimmed: session.pause !== null,
+      }),
+    ],
   });
   return [header, board, legend];
 }
@@ -126,13 +139,24 @@ export function pane(
     view.isFocused ? null : Text({ dimColor: true, children: [text] });
   // Fills the pane: on Desktop a click below the tree loses the keys, so hotkeys would go to the prompt
   const root = (children: (RenderElement | null)[]) =>
-    Box({ flexDirection: "column", rowGap: 1, minHeight: view.bodyRows, children });
+    Box({
+      flexDirection: "column",
+      rowGap: 1,
+      minHeight: view.bodyRows,
+      children,
+    });
 
   if (!entry) {
     return root([hint("Click here to use the keyboard"), menu(els, session, actions.onChoose)]);
   }
   const title = Text({ bold: true, children: [entry.name] });
-  const back = Button({ key: "pane-back", label: "Menu", hotkey: "q", onPress: actions.onBack });
+  const back = Button({
+    key: "pane-back",
+    label: "Menu",
+    hotkey: "q",
+    plain: true,
+    onPress: actions.onBack,
+  });
   const game = currentGame(session);
   if (!game) {
     return root([
