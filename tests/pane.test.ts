@@ -1,6 +1,14 @@
 import { expect, test } from "claude-code/testing";
 import { NOT_ON_SURFACE, WIDEN_PANE } from "../src/pane";
-import { BAND, openFromBand, PANE, pressAll, stubEngine, WINNING_KEYS } from "./engine";
+import {
+  BAND,
+  LOSING_2048_KEYS,
+  openFromBand,
+  PANE,
+  pressAll,
+  stubEngine,
+  WINNING_KEYS,
+} from "./engine";
 
 const UNFOCUSED = { ...PANE, props: { ...PANE.props, isFocused: false } } as const;
 
@@ -90,6 +98,49 @@ for (const surface of ["desktop", "terminal"] as const) {
     await ui.press({ key: "pane-restart" });
     expect(await ui.find({ type: "Text", text: "Your move" })).toBeDefined();
     expect(await ui.find({ type: "Text", text: "score 1 · best 1" })).toBeDefined();
+    await ui.unmount();
+  });
+
+  test(`a 2048 game opens with its four controls on ${surface}`, async ($, on) => {
+    stubEngine(on);
+    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    await openFromBand($, surface, "2048");
+
+    const ui = await $.ui.mount({ ...PANE, surface });
+    expect(await ui.find({ type: "Text", text: "Merge the tiles to reach 2048" })).toBeDefined();
+    expect(await ui.find({ key: "board-row-3" })).toBeDefined();
+    for (const id of ["up", "left", "down", "right"]) {
+      expect(await ui.find({ key: `control-${id}` })).toBeDefined();
+    }
+    expect(await ui.find({ key: "control-place" })).toBeUndefined();
+    await ui.unmount();
+  });
+
+  test(`a 2048 game below its size asks for a wider window on ${surface}`, async ($, on) => {
+    stubEngine(on);
+    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    await openFromBand($, surface, "2048");
+
+    const ui = await $.ui.mount({ ...INLINE_SHORT, surface });
+    expect(await ui.find({ type: "Text", text: WIDEN_PANE })).toBeDefined();
+    expect(await ui.find({ key: "board-row-0" })).toBeUndefined();
+    await ui.unmount();
+  });
+
+  test(`a 2048 game is played to game over, its best score saved, on ${surface}`, async ($, on) => {
+    const engine = stubEngine(on);
+    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    await openFromBand($, surface, "2048");
+
+    const ui = await $.ui.mount({ ...PANE, surface });
+    await pressAll(ui, LOSING_2048_KEYS);
+    expect(await ui.find({ type: "Text", text: "No moves left · R to play again" })).toBeDefined();
+    expect(await ui.find({ type: "Text", text: "score 3140 · best 3140" })).toBeDefined();
+    expect(engine.stored).toEqual({ "best:2048": 3140 });
+
+    await ui.press({ key: "pane-restart" });
+    expect(await ui.find({ type: "Text", text: "Merge the tiles to reach 2048" })).toBeDefined();
+    expect(await ui.find({ type: "Text", text: "score 0 · best 3140" })).toBeDefined();
     await ui.unmount();
   });
 

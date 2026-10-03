@@ -11,6 +11,7 @@ test("no argument opens the menu", () => {
 test("a known game id targets that game", () => {
   expect(parseArgs("morpion")).toEqual({ kind: "game", id: "morpion" });
   expect(parseArgs("  Hogzzle ")).toEqual({ kind: "game", id: "hogzzle" });
+  expect(parseArgs("2048")).toEqual({ kind: "game", id: "2048" });
 });
 
 test("stop closes the pane", () => {
@@ -43,7 +44,7 @@ for (const surface of ["desktop", "terminal"] as const) {
     expect(engine.opened).toEqual([{ id: "gamemods", title: "Gamemods", focus: true }]);
 
     const ui = await $.ui.mount({ ...PANE, surface });
-    for (const id of ["morpion", "hogzzle"]) {
+    for (const id of ["morpion", "hogzzle", "2048"]) {
       expect(await ui.find({ key: `game-${id}` })).toBeDefined();
     }
     await ui.unmount();
