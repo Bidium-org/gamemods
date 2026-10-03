@@ -1,7 +1,7 @@
 import { expect, test } from "claude-code/testing";
 import { WIDEN } from "../src/band";
 import { parseArgs } from "../src/command";
-import { BAND, gameboy, PANE, stubEngine } from "./engine";
+import { BAND, gamemods, PANE, stubEngine } from "./engine";
 
 test("no argument opens the menu", () => {
   expect(parseArgs("")).toEqual({ kind: "menu" });
@@ -32,15 +32,15 @@ for (const surface of ["desktop", "terminal"] as const) {
     const engine = stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
     expect(engine.registered).toEqual([
-      expect.objectContaining({ name: "gameboy", immediate: true, argumentHint: "[game|stop]" }),
+      expect.objectContaining({ name: "gamemods", immediate: true, argumentHint: "[game|stop]" }),
     ]);
   });
 
-  test(`/gameboy opens the pane on its menu on ${surface}`, async ($, on) => {
+  test(`/gamemodsopens the pane on its menu on ${surface}`, async ($, on) => {
     const engine = stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await gameboy($);
-    expect(engine.opened).toEqual([{ id: "gameboy", title: "Gameboy", focus: true }]);
+    await gamemods($);
+    expect(engine.opened).toEqual([{ id: "gamemods", title: "Gamemods", focus: true }]);
 
     const ui = await $.ui.mount({ ...PANE, surface });
     for (const id of ["morpion", "hogzzle"]) {
@@ -49,10 +49,10 @@ for (const surface of ["desktop", "terminal"] as const) {
     await ui.unmount();
   });
 
-  test(`/gameboy <id> opens that game on ${surface}`, async ($, on) => {
+  test(`/gamemods<id> opens that game on ${surface}`, async ($, on) => {
     const engine = stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await gameboy($, "hogzzle");
+    await gamemods($, "hogzzle");
     expect(engine.opened).toHaveLength(1);
 
     const ui = await $.ui.mount({ ...PANE, surface });
@@ -61,10 +61,10 @@ for (const surface of ["desktop", "terminal"] as const) {
     await ui.unmount();
   });
 
-  test(`/gameboy with an unknown id opens the menu on ${surface}`, async ($, on) => {
+  test(`/gamemodswith an unknown id opens the menu on ${surface}`, async ($, on) => {
     stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await gameboy($, "pong");
+    await gamemods($, "pong");
 
     const ui = await $.ui.mount({ ...PANE, surface });
     expect(await ui.find({ key: "game-hogzzle" })).toBeDefined();
@@ -72,12 +72,12 @@ for (const surface of ["desktop", "terminal"] as const) {
     await ui.unmount();
   });
 
-  test(`/gameboy stop closes the pane and keeps the game on ${surface}`, async ($, on) => {
+  test(`/gamemodsstop closes the pane and keeps the game on ${surface}`, async ($, on) => {
     const engine = stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await gameboy($, "hogzzle");
-    await gameboy($, "stop");
-    expect(engine.closed).toEqual(["gameboy"]);
+    await gamemods($, "hogzzle");
+    await gamemods($, "stop");
+    expect(engine.closed).toEqual(["gamemods"]);
 
     // Closed: the engine draws the pane itself
     const closed = await $.ui.mount({ ...PANE, surface });
@@ -86,7 +86,7 @@ for (const surface of ["desktop", "terminal"] as const) {
     await closed.unmount();
 
     // Reopening on the menu finds the same game waiting
-    await gameboy($);
+    await gamemods($);
     const reopened = await $.ui.mount({ ...PANE, surface });
     expect(await reopened.find({ key: "game-hogzzle" })).toBeDefined();
     await reopened.unmount();
@@ -95,7 +95,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   test(`an unplaced pane is explained in the band on ${surface}`, async ($, on) => {
     const engine = stubEngine(on, { isPlaced: false });
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await gameboy($, "morpion");
+    await gamemods($, "morpion");
     expect(engine.toasts).toEqual([]);
 
     const ui = await $.ui.mount({ ...BAND, surface });
@@ -110,7 +110,7 @@ for (const surface of ["desktop", "terminal"] as const) {
     await band.press({ key: "band-close" });
     await band.unmount();
 
-    await gameboy($, "morpion");
+    await gamemods($, "morpion");
     expect(engine.toasts).toEqual([WIDEN]);
   });
 }

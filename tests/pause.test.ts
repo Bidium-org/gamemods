@@ -1,5 +1,5 @@
 import { type Engine, expect, test } from "claude-code/testing";
-import { gameboy, openFromBand, PANE, stubEngine } from "./engine";
+import { gamemods, openFromBand, PANE, stubEngine } from "./engine";
 
 const UNFOCUSED = { ...PANE.props, isFocused: false } as const;
 
@@ -102,18 +102,18 @@ for (const surface of ["desktop", "terminal"] as const) {
     await ui.unmount();
   });
 
-  // The kit cannot raise the person's close mark: `/gameboy stop` takes the same transition
+  // The kit cannot raise the person's close mark: `/gamemods stop` takes the same transition
   test(`closing the pane pauses the game on ${surface}`, async ($, on) => {
     stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
     await openFromBand($, surface, "morpion");
 
-    await gameboy($, "stop");
+    await gamemods($, "stop");
     const closed = await $.ui.mount({ ...PANE, surface });
     expect(await closed.find({ type: "Text", text: "engine band" })).toBeDefined();
     await closed.unmount();
 
-    await gameboy($, "morpion");
+    await gamemods($, "morpion");
     const reopened = await $.ui.mount({ ...PANE, surface });
     expect(await reopened.find({ type: "Text", text: "Paused · P to resume" })).toBeDefined();
     await reopened.unmount();
