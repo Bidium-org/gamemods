@@ -1,6 +1,11 @@
 import type { GameId } from "./catalog";
+import type { Game } from "./games/game";
+import { GAMES } from "./games/index";
 
 export type Screen = "closed" | "menu" | "game";
+
+export type PauseReason =
+  "manual" | "focus" | "permission" | "turn-end" | "menu";
 
 export type Session = {
   screen: Screen;
@@ -8,6 +13,13 @@ export type Session = {
   // Hidden by the band's close button, until the session ends
   bandHidden: boolean;
   gameId: GameId | null;
+  // The chosen game's state; null for a game not playable yet
+  state: unknown;
+  pause: PauseReason | null;
+  // The pane's last `isFocused`
+  hasFocus: boolean;
+  isWorking: boolean;
+  best: Partial<Record<GameId, number>>;
 };
 
 export const initialSession: Session = {
@@ -15,20 +27,75 @@ export const initialSession: Session = {
   bandExpanded: false,
   bandHidden: false,
   gameId: null,
+  state: null,
+  pause: null,
+  hasFocus: false,
+  isWorking: false,
+  best: {},
 };
 
-export const toggleBand = (s: Session): Session => ({ ...s, bandExpanded: !s.bandExpanded });
+export const currentGame = (s: Session): Game<unknown> | undefined =>
+  s.gameId ? GAMES[s.gameId] : undefined;
+
+export const pausedGameId = (s: Session): GameId | null =>
+  s.state !== null && s.pause ? s.gameId : null;
+
+export const toggleBand = (s: Session): Session => ({
+  ...s,
+  bandExpanded: !s.bandExpanded,
+});
 
 export const hideBand = (s: Session): Session => ({ ...s, bandHidden: true });
 
-export const chooseGame = (s: Session, id: GameId): Session => ({
-  ...s,
-  screen: "game",
-  bandExpanded: false,
-  gameId: id,
-});
+// The first reason wns; nothing to pause without a game
+export const pause = (s: Session, reason: PauseReason): Session =>
+  s.pause || s.state === null ? s : { ...s, pause: reason };
 
-export const openMenu = (s: Session): Session => ({ ...s, screen: "menu" });
+export const togglePause = (s: Session): Session =>
+  s.pause ? { ...s, pause: null } : pause(s, "manual");
+
+// The same game comes back as it was left; another one abandons it
+export const chooseGame = (s: Session, id: GameId, seed: number): Session => {
+  const shown = { ...s, screen: "game" as const, bandExpanded: false };
+  if (id === s.gameId) return shown;
+  return {
+    ...shown,
+    gameId: id,
+    state: GAMES[id]?.init(seed) ?? null,
+    pause: null,
+  };
+};
+
+export const openMenu = (s: Session): Session =>
+  pause({ ...s, screen: "menu" }, "menu");
 
 // The game stays in memory: only the pane goes away
-export const closePane = (s: Session): Session => ({ ...s, screen: "closed" });
+export const closePane = (s: Session): Session =>
+  pause({ ...s, screen: "closed" }, "menu");
+
+// A paused game ignores its keys; the best score follows the score up
+export const control = (s: Session, id: string): Session => {
+  const game = currentGame(s);
+  if (!game || !s.gameId || s.pause) return s;
+  const state = game.onControl(s.state, id);
+  const score = game.status(state).score;
+  const best = Math.max(s.best[s.gameId] ?? 0, score);
+  return { ...s, state, best: { ...s.best, [s.gameId]: best } };
+};
+
+export const restart = (s: Session, seed: number): Session => {
+  const game = currentGame(s);
+  if (!game) return s;
+  const state = game.restart?.(s.state, seed) ?? game.init(seed);
+  return { ...s, state, pause: null };
+};
+
+// Losing the focus pauses; getting it back never resumes
+export const observeFocus = (s: Session, isFocused: boolean): Session => {
+  if (s.hasFocus === isFocused) return s;
+  const seen = { ...s, hasFocus: isFocused };
+  return isFocused ? seen : pause(seen, "focus");
+};
+
+export const setWorking = (s: Session, isWorking: boolean): Session =>
+  s.isWorking === isWorking ? s : { ...s, isWorking };
