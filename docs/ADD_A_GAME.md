@@ -16,7 +16,7 @@ The session already handles the menu, `p` pause, `r` restart, `q` back to the me
 - `init(seed)`: all randomness comes from the seed, kept in the state. Same seed, same game.
 - `restart(s, seed)`: optional, defaults to `init(seed)`. Use it to carry something across games (Morpion keeps its win streak).
 - `status(s).score`: higher is better. The best score is the max ever reached, stored per game.
-- `board(s)`: rows of `Cell`s drawn as fixed-size boxes (`cell.width` × `cell.height`, `gap` apart, `bg` as background). Why: [ARCHITECTURE.md → Platform constraints](ARCHITECTURE.md#platform-constraints).
+- `board(s)`: rows of `Cell`s drawn as fixed-size boxes (`cell.width` × `cell.height`, `gap` apart, `bg` as background). Give `cell.height` an odd value: a terminal tile needs a middle row to center its glyph. Why fixed-size: [ARCHITECTURE.md → Platform constraints](ARCHITECTURE.md#platform-constraints).
 - `size`: the smallest pane body (columns, rows) the whole game screen fits in: header, framed board, legend. Below it, the pane asks for a wider window. Check it on Desktop.
 - `tickMs` / `tick`: reserved, see [ARCHITECTURE.md → Current state](ARCHITECTURE.md#current-state).
 

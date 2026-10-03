@@ -26,7 +26,12 @@ const LINES: readonly [number, number, number][] = [
   [2, 4, 6],
 ];
 
-const COLORS = { X: "#5fafff", O: "#ff8787", tile: "#2e2e2e", cursor: "#5a5a5a" };
+const COLORS = {
+  X: "#5fafff",
+  O: "#ff8787",
+  tile: "#2e2e2e",
+  cursor: "#5a5a5a",
+};
 
 const winner = (cells: MorpionState["cells"]): Mark | null => {
   const line = LINES.find(
@@ -133,16 +138,19 @@ export const createMorpion = (mistakeRate: number): Game<MorpionState> => ({
     { id: "right", label: "Right", hotkey: "d" },
     { id: "place", label: "Place", hotkey: "e" },
   ],
-  size: { columns: 24, rows: 20 },
+  size: { columns: 24, rows: 23 },
   init,
   // A restart after a win keeps the streak; any other restart ends it
-  restart: (s, seed) => ({ ...init(seed), streak: phaseOf(s.cells) === "won" ? s.streak : 0 }),
+  restart: (s, seed) => ({
+    ...init(seed),
+    streak: phaseOf(s.cells) === "won" ? s.streak : 0,
+  }),
   onControl: (s, id) => {
     if (phaseOf(s.cells) !== "playing") return s;
     return id === "place" ? place(s, mistakeRate) : { ...s, cursor: moveCursor(s.cursor, id) };
   },
   board: (s) => ({
-    cell: { width: 5, height: 2 },
+    cell: { width: 5, height: 3 },
     gap: 1,
     rows: ROWS.map((row) => row.map((i) => tile(s, i))),
   }),
