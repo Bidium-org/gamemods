@@ -1,5 +1,5 @@
 name: Game proposal
-description: Suggest a game for the console
+description: Suggest a game for Gamemods
 labels: [game]
 body:
   - type: input

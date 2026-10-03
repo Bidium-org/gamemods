@@ -97,7 +97,7 @@ export const register: Register = (on) => {
   on("session.start", async ($, e, next) => {
     await $.command.register({
       name: "gamemods",
-      description: "Open the game console, or a game by id; stop closes it",
+      description: "Open the games menu, or a game by id; stop closes it",
       argumentHint: "[game|stop]",
       immediate: true,
     });

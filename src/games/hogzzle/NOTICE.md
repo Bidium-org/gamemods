@@ -12,7 +12,7 @@ They come unmodified from PostHog's media page, https://posthog.com/media:
 | `banner-posthog-ceo-diary-blog.png` | Banner images             |
 | `banner-posthog-features.jpg`       | Banner images             |
 
-Hogzzle shows them as PostHog drew them: only resized and re-encoded to fit the console, never cropped, recolored or redrawn. Hogzzle is not a PostHog product and is not endorsed by PostHog. PostHog's brand rules: https://posthog.com/handbook/brand/assets.
+Hogzzle shows them as PostHog drew them: only resized and re-encoded to fit the pane, never cropped, recolored or redrawn. Hogzzle is not a PostHog product and is not endorsed by PostHog. PostHog's brand rules: https://posthog.com/handbook/brand/assets.
 
 ## How they were prepared
 

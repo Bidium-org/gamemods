@@ -1,10 +1,10 @@
-# Gamemods
+# Gamemods: games for Claude Code
 
-A game console for Claude Code, playable while Claude works. A menu sits in the band above the prompt, the game opens in a side pane. Every key is answered locally: zero model calls, zero tokens, nothing added to the conversation.
+Play games in Claude Code while Claude works. Gamemods is a Claude Code mod (plugin): a game menu in the band above the prompt, each game in a side pane. It works in the terminal and in Desktop. Every key is answered locally: zero model calls, zero tokens, nothing added to the conversation.
 
 ## Games
 
-Rules, keys and score of each game are in its README.
+The Claude Code game mods available today. Rules, keys and score of each game are in its README.
 
 | Game                                   | What                                             | Surfaces          |
 | :------------------------------------- | :----------------------------------------------- | :---------------- |
@@ -68,3 +68,5 @@ Security issues: [SECURITY.md](SECURITY.md).
 [MIT](LICENSE) © Birium
 
 Hogzzle's pictures are © PostHog, used unmodified and not covered by this license: see [Hogzzle → Pictures](src/games/hogzzle/README.md#pictures).
+
+Gamemods is an independent project, not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic.
