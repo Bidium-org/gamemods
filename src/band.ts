@@ -1,9 +1,12 @@
 import type { RenderElement } from "claude-code";
-import type { GameId } from "./catalog";
+import { CATALOG, type GameId } from "./catalog";
 import { type MenuElements, menu } from "./menu";
-import type { Session } from "./session";
+import { pausedGameId, type Session } from "./session";
 
 export const WIDEN = "Widen the window to open the game";
+
+export const claudeState = (isWorking: boolean): string =>
+  isWorking ? "Claude is working" : "Claude is waiting";
 
 export type BandActions = {
   onToggle: () => void;
@@ -25,6 +28,7 @@ export function band(
   actions: BandActions,
 ): RenderElement {
   const { Box, Text, Button } = els;
+  const paused = CATALOG.find((g) => g.id === pausedGameId(session));
   return Box({
     flexDirection: "column",
     children: [
@@ -38,10 +42,8 @@ export function band(
             columnGap: 2,
             children: [
               Text({ bold: true, children: ["GAMEBOY"] }),
-              Text({
-                dimColor: true,
-                children: [view.isWorking ? "Claude is working" : "Claude is waiting"],
-              }),
+              Text({ dimColor: true, children: [claudeState(view.isWorking)] }),
+              paused ? Text({ children: [`${paused.name} paused`] }) : null,
               Button({
                 key: "band-toggle",
                 label: session.bandExpanded ? "Fold" : "Games",
@@ -61,7 +63,7 @@ export function band(
         ],
       }),
       view.isPaneUnplaced ? Text({ dimColor: true, children: [WIDEN] }) : null,
-      session.bandExpanded ? menu(els, actions.onChoose) : null,
+      session.bandExpanded ? menu(els, session, actions.onChoose) : null,
     ],
   });
 }
