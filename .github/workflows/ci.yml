@@ -9,7 +9,8 @@ jobs:
   check:
     runs-on: ubuntu-latest
     env:
-      # Mods are early access: without it, `claude plugin test` refuses to run
+      # A runner has no signed-in Claude Code config: on a blank home, `claude plugin test`
+      # answers "hooks modules are not turned on in this build yet" without this variable
       CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1"
     steps:
       - uses: actions/checkout@v4
