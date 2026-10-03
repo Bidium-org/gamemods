@@ -12,6 +12,12 @@ The Claude Code game mods available today. Rules, keys and score of each game ar
 | [Hogzzle](src/games/hogzzle/README.md) | Swap the tiles until PostHog's hedgehog is whole | Desktop           |
 | [Echo](src/games/echo/README.md)       | Repeat a growing sequence of lit cells           | Desktop, terminal |
 
+## A side project, for fun
+
+Gamemods started as a way to try Claude Code mods and to have a good time doing it. It is not a productivity tool and it does not take itself too seriously: think of it as an arcade cabinet for Claude, where you play a round while Claude works. It feels good to ship something fun next to the everyday grind.
+
+The cabinet is meant to fill up. If you have a game in mind, add it: a game is a small pure module, and [docs/ADD_A_GAME.md](docs/ADD_A_GAME.md) walks you through it. Not sure yet? Open a [game proposal](https://github.com/Birium/gamemods/issues/new?template=game_proposal.yml) and let's talk.
+
 ## Requirements
 
 - Claude Code 2.1.287 or later (mods are on by default from that version).
@@ -59,7 +65,7 @@ Each game has its own score, described in its README. The best score of each gam
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): dev loop, checks, manual test protocol.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): how the mod is built.
-- [docs/ADD_A_GAME.md](docs/ADD_A_GAME.md): add a game.
+- [docs/ADD_A_GAME.md](docs/ADD_A_GAME.md): add a game, new games are very welcome.
 
 Security issues: [SECURITY.md](SECURITY.md).
 
@@ -70,3 +76,5 @@ Security issues: [SECURITY.md](SECURITY.md).
 Hogzzle's pictures are © PostHog, used unmodified and not covered by this license: see [Hogzzle → Pictures](src/games/hogzzle/README.md#pictures).
 
 Gamemods is an independent project, not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic.
+
+If you had fun, leave a star on the repo: it is the cheapest way to say thanks, and it helps other people find the project.
