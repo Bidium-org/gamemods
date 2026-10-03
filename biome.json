@@ -5,7 +5,6 @@
       "hooks/**",
       "src/**",
       "tests/**",
-      "scripts/**",
       "*.json",
       "!pnpm-lock.yaml",
       "!.claude-plugin/types"
