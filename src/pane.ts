@@ -1,12 +1,13 @@
-import type { RenderElement } from "claude-code";
+import type { RenderElement, RenderSurface } from "claude-code";
 import { claudeState } from "./band";
 import { CATALOG, type CatalogEntry, type GameId } from "./games/catalog";
 import type { Game } from "./games/game";
 import { type MenuElements, menu } from "./menu";
-import { boardText } from "./render/text";
+import { type BoardElements, drawBoard } from "./render/board";
 import { currentGame, type PauseReason, type Session } from "./session";
 
 export const WIDEN_PANE = "Widen the window to play";
+export const NOT_ON_SURFACE = "This game is not playable here yet. Play it in Claude Code Desktop.";
 
 export type PaneActions = {
   onChoose: (id: GameId) => void;
@@ -16,7 +17,10 @@ export type PaneActions = {
   onRestart: () => void;
 };
 
+export type PaneElements = MenuElements & BoardElements;
+
 export type PaneView = {
+  surface: RenderSurface;
   isFocused: boolean;
   bodyColumns: number;
   bodyRows: number;
@@ -38,6 +42,7 @@ function gameScreen(
   session: Session,
   entry: CatalogEntry,
   game: Game<unknown>,
+  drawn: RenderElement,
   actions: PaneActions,
 ): RenderElement[] {
   const { Box, Text, Button } = els;
@@ -118,17 +123,13 @@ function gameScreen(
     alignSelf: "flex-start",
     borderStyle: "round",
     ...(session.pause ? { borderColor: PAUSE_COLOR } : { borderDimColor: true }),
-    children: [
-      boardText(els, game.board(session.state), {
-        dimmed: session.pause !== null,
-      }),
-    ],
+    children: [drawn],
   });
   return [header, board, legend];
 }
 
 export function pane(
-  els: MenuElements,
+  els: PaneElements,
   session: Session,
   view: PaneView,
   actions: PaneActions,
@@ -166,8 +167,22 @@ export function pane(
       back,
     ]);
   }
+  const drawn = drawBoard(els, view.surface, game.board(session.state), {
+    dimmed: session.pause !== null,
+  });
+  if (!drawn) {
+    return root([
+      hint("Click the game to play"),
+      title,
+      Text({ children: [NOT_ON_SURFACE] }),
+      back,
+    ]);
+  }
   if (view.bodyColumns < game.size.columns || view.bodyRows < game.size.rows) {
     return root([title, Text({ children: [WIDEN_PANE] }), back]);
   }
-  return root([hint("Click the game to play"), ...gameScreen(els, session, entry, game, actions)]);
+  return root([
+    hint("Click the game to play"),
+    ...gameScreen(els, session, entry, game, drawn, actions),
+  ]);
 }

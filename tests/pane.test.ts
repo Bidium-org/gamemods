@@ -1,5 +1,5 @@
 import { expect, test } from "claude-code/testing";
-import { WIDEN_PANE } from "../src/pane";
+import { NOT_ON_SURFACE, WIDEN_PANE } from "../src/pane";
 import { BAND, openFromBand, PANE, pressAll, stubEngine, WINNING_KEYS } from "./engine";
 
 const UNFOCUSED = { ...PANE, props: { ...PANE.props, isFocused: false } } as const;
@@ -10,6 +10,50 @@ const INLINE_SHORT = {
   ...PANE,
   props: { ...PANE.props, placement: "inline", scroll: { offset: 0, bodyRows: 10 } },
 } as const;
+
+type Drawn = { type: string; props: { source?: string }; children?: unknown[] };
+
+// The first Svg of the drawn tree
+const svgOf = (node: Drawn): Drawn | undefined =>
+  node.type === "Svg"
+    ? node
+    : (node.children ?? [])
+        .filter((c): c is Drawn => typeof c === "object" && c !== null)
+        .map(svgOf)
+        .find(Boolean);
+
+test("Hogzzle draws its picture as an Svg redrawn at each move on desktop", async ($, on) => {
+  stubEngine(on);
+  await $.session.start({ surface: "desktop", isInteractive: true, cwd: "/work" });
+  await openFromBand($, "desktop", "hogzzle");
+
+  const ui = await $.ui.mount({ ...PANE, surface: "desktop" });
+  const svg = async () => svgOf((await ui.drawn()) as Drawn);
+  const first = await svg();
+  expect(first).toBeDefined();
+  expect(await ui.find({ key: "control-pick" })).toBeDefined();
+
+  await ui.press({ key: "control-right" });
+  const moved = await svg();
+  expect(moved?.props.source).not.toBe(first?.props.source);
+
+  await ui.press({ key: "pane-pause" });
+  expect((await svg())?.props.source).toContain('fill-opacity=".55"');
+  await ui.unmount();
+});
+
+test("Hogzzle says it is not playable in the terminal yet", async ($, on) => {
+  stubEngine(on);
+  await $.session.start({ surface: "terminal", isInteractive: true, cwd: "/work" });
+  await openFromBand($, "terminal", "hogzzle");
+
+  const ui = await $.ui.mount({ ...PANE, surface: "terminal" });
+  expect(await ui.find({ type: "Text", text: NOT_ON_SURFACE })).toBeDefined();
+  expect(await ui.find({ key: "control-pick" })).toBeUndefined();
+  await ui.press({ key: "pane-back" });
+  expect(await ui.find({ key: "game-hogzzle" })).toBeDefined();
+  await ui.unmount();
+});
 
 for (const surface of ["desktop", "terminal"] as const) {
   test(`the pane goes from a game to the menu and to another game on ${surface}`, async ($, on) => {
@@ -23,12 +67,12 @@ for (const surface of ["desktop", "terminal"] as const) {
     expect(await ui.find({ key: "control-place" })).toBeDefined();
 
     await ui.press({ key: "pane-back" });
-    for (const id of ["morpion", "snake", "tetris", "sudoku"]) {
+    for (const id of ["morpion", "hogzzle"]) {
       expect(await ui.find({ key: `game-${id}` })).toBeDefined();
     }
 
-    await ui.press({ key: "game-snake" });
-    expect(await ui.find({ type: "Text", text: /^Coming soon/ })).toBeDefined();
+    await ui.press({ key: "game-hogzzle" });
+    expect(await ui.find({ type: "Text", text: "Hogzzle" })).toBeDefined();
     expect(await ui.find({ key: "pane-back" })).toBeDefined();
     await ui.unmount();
   });
@@ -117,7 +161,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   test(`the pane asks for a click when it has no keyboard on ${surface}`, async ($, on) => {
     stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await openFromBand($, surface, "tetris");
+    await openFromBand($, surface, "hogzzle");
 
     const ui = await $.ui.mount({ ...UNFOCUSED, surface });
     expect(await ui.find({ type: "Text", text: "Click the game to play" })).toBeDefined();

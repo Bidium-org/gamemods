@@ -1,11 +1,11 @@
 import type { ElementTable, RenderElement } from "claude-code";
-import type { Board, Cell } from "../games/game";
+import type { Cell, CellBoard } from "../games/game";
 
 export type TextElements = Pick<ElementTable<"terminal">, "Box" | "Text">;
 
 export function boardText(
   { Box, Text }: TextElements,
-  board: Board,
+  board: CellBoard,
   { dimmed = false } = {},
 ): RenderElement {
   const { cell, gap = 0 } = board;
