@@ -1,5 +1,5 @@
 import { expect, test } from "claude-code/testing";
-import { createMorpion, type MorpionState } from "../src/games/morpion";
+import { createMorpion, type MorpionState } from "../src/games/morpion/morpion";
 
 const SEED = 1;
 const _ = null;

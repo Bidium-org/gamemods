@@ -1,5 +1,5 @@
 import { expect, test } from "claude-code/testing";
-import type { MorpionState } from "../src/games/morpion";
+import type { MorpionState } from "../src/games/morpion/morpion";
 import {
   chooseGame,
   closePane,
@@ -39,13 +39,6 @@ test("choosing a game folds the band and starts it unpaused", () => {
   expect(morpionState(s).cursor).toBe(4);
 });
 
-test("a game not playable yet has no state", () => {
-  expect(chooseGame(initialSession, "tetris", SEED)).toMatchObject({
-    gameId: "tetris",
-    state: null,
-  });
-});
-
 test("opening the menu pauses the game and keeps it", () => {
   const s = openMenu(placeAt(morpion(), 0));
   expect(s).toMatchObject({ screen: "menu", gameId: "morpion", pause: "menu" });
@@ -59,7 +52,7 @@ test("choosing the same game brings it back as it was left, paused", () => {
 
 test("choosing another game abandons the running one and its streak", () => {
   const won = winOnce(morpion());
-  const other = chooseGame(openMenu(won), "snake", SEED);
+  const other = chooseGame(openMenu(won), "hogzzle", SEED);
   const again = chooseGame(other, "morpion", SEED);
   expect(morpionState(again).streak).toBe(0);
 });
@@ -92,7 +85,6 @@ test("the first pause reason wins", () => {
 
 test("nothing pauses without a game", () => {
   expect(pause(initialSession, "turn-end")).toBe(initialSession);
-  expect(pause(chooseGame(initialSession, "sudoku", SEED), "turn-end").pause).toBeNull();
 });
 
 test("p pauses, and only p resumes", () => {

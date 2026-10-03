@@ -142,6 +142,7 @@ export const register: Register = (on) => {
     // This drawing already shows the new state; the band catches up at the next redraw
     session = observeFocus(session, e.props.isFocused);
     const view = {
+      surface: e.surface,
       isFocused: e.props.isFocused,
       bodyColumns: e.props.bodyColumns,
       bodyRows: e.props.scroll.bodyRows,

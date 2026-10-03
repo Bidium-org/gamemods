@@ -1,6 +1,6 @@
 # Architecture
 
-A Claude Code mod: a game menu in the band above the prompt, the game in a pane. One hooks module answers every key itself, so it makes zero model calls and adds nothing to the transcript. Desktop (Code tab) and terminal run the same code and the same `Text` rendering.
+A Claude Code mod: a game menu in the band above the prompt, the game in a pane. One hooks module answers every key itself, so it makes zero model calls and adds nothing to the transcript. Desktop (Code tab) and terminal run the same code; each board is drawn by the renderer its kind and the surface call for.
 
 ## Layout
 
@@ -8,8 +8,8 @@ A Claude Code mod: a game menu in the band above the prompt, the game in a pane.
 .claude-plugin/   → plugin and marketplace manifests (the repo is both); types/ is generated, ignored
 hooks/            → the single entry point: wires engine hooks to the session
 src/              → session state and transitions, band, pane and menu views, /gameboy parsing
-src/games/        → everything a game owns: catalog, contract, registry, one file per game
-src/render/       → Board to elements (Text today)
+src/games/        → contract, catalog, registry and helpers shared by games; one folder per game, with its README
+src/render/       → Board to elements: picks the renderer by board kind and surface; text for cell boards
 tests/            → kit tests run by `claude plugin test`; shared engine stub in tests/engine.ts
 docs/             → this file, ADD_A_GAME.md
 ```
@@ -40,9 +40,9 @@ Games are pure (state in, state out, no `$`). How to add one: `docs/ADD_A_GAME.m
 **A key press.**
 
 1. A `Button` with a `hotkey` in `src/pane.ts` → `play()` in `hooks/register.ts`.
-2. `control()` in `src/session.ts` → the game's `onControl()` (`src/games/<id>.ts`), ignored while paused. The session's best score follows the game's score up.
+2. `control()` in `src/session.ts` → the game's `onControl()` (`src/games/<id>/<id>.ts`), ignored while paused. The session's best score follows the game's score up.
 3. If the best score rose, `saveBest()` re-reads the store and writes only a higher value: `$.store` is shared by every session of the machine.
-4. `commit()` invalidates; the next draw goes through `boardText()` in `src/render/text.ts`.
+4. `commit()` invalidates; the next draw goes through `drawBoard()` in `src/render/board.ts`: `boardText()` for a cell board, the game's own renderer for its board kind (Hogzzle's `svg.ts`), or a "not playable here" screen when the surface has none.
 
 **Closing the pane.** The native `✕` (`ui.close` with a person origin) and `/gameboy stop` both reach `closePane()`. The game stays in memory, paused. Reopening shows the menu; choosing the same game resumes it, another one abandons it.
 
@@ -71,6 +71,7 @@ A game runs only on the game screen with no pause. One field holds the pause and
 - Every key a game reads MUST be a `hotkey` (a digit or lowercase letter) on a `Button`. Any other printable key sends the focus to the prompt. `p`, `r`, `q` belong to the session.
 - A `hotkey` goes only where it demonstrably fires: Desktop draws its key badge regardless. Menu and band buttons have none (clicked, or Tab, arrows and Enter).
 - Every render has a `$.ui.mount` test on `desktop` and `terminal`. An invalid tree makes the engine draw the site instead.
+- Files ending in `.gen.ts` are generated and committed: never edit them by hand, their header names the script that wrote them.
 
 ## Platform constraints
 
@@ -79,12 +80,13 @@ Measured on Desktop 2.1.286 and terminal 2.1.287. A new Claude Code build can ch
 - **No `Client`.** It never loads on Desktop (content security policy). Loop, state and input all live in the hooks module, and every view is a tree returned by `ui.render`.
 - **Proportional font on Desktop.** A grid drawn with characters never aligns. `src/render/text.ts` draws each cell as a fixed-size `Box` with its glyph centered; the terminal, monospace, aligns both.
 - **No focus at open on Desktop.** Neither after a band press nor after `/gameboy`, despite `focus: true`; the terminal grants it. A click gives the keys only if it lands inside the drawn tree, so the pane's root `Box` takes `minHeight` of the body rows. The pane shows a "click to play" hint while unfocused.
+- **`Svg` keeps its first drawing per `key` on Desktop.** Text around it updates, the picture does not. A press counter as key replays old drawings after `/reload-plugins`, when the counter restarts: the key must be a hash of the `source` (`src/games/hogzzle/svg.ts`). The types declare no `key` on `Svg` and the test kit drops it from the drawn tree, yet Desktop reads it: only Desktop shows this. The `source` is capped at 131 072 characters.
 - **Pane placement.** Desktop keeps the pane `dock`, even out of fullscreen. Below the game's `size` the pane shows "Widen the window to play". `inline` was never observed.
 
 ## Current state
 
 - `tickMs` and `tick` are in the contract but no clock exists: only turn-based games work. The loop comes with the first real-time game.
-- Only the `Text` renderer exists; `src/render/` is where an `Svg` one would go.
+- Renderers: text for cell boards on every surface, Hogzzle's `Svg` on Desktop. The terminal has no picture renderer yet, so Hogzzle shows "not playable here" there.
 - `src/session.ts` imports `./games/index` explicitly: directory imports are not proven on Desktop.
 - A "Resume" button on the folded band was tried and reverted: it showed while the pane was open and paused for focus. The band only says `<Game> paused`.
 - An aborted turn still pauses with "Claude answered" (`isAborted` is not read).

@@ -10,7 +10,7 @@ test("no argument opens the menu", () => {
 
 test("a known game id targets that game", () => {
   expect(parseArgs("morpion")).toEqual({ kind: "game", id: "morpion" });
-  expect(parseArgs("  Snake ")).toEqual({ kind: "game", id: "snake" });
+  expect(parseArgs("  Hogzzle ")).toEqual({ kind: "game", id: "hogzzle" });
 });
 
 test("stop closes the pane", () => {
@@ -23,7 +23,7 @@ test("an unknown id opens the menu", () => {
 });
 
 test("only the first word counts", () => {
-  expect(parseArgs("tetris now")).toEqual({ kind: "game", id: "tetris" });
+  expect(parseArgs("hogzzle now")).toEqual({ kind: "game", id: "hogzzle" });
   expect(parseArgs("pong morpion")).toEqual({ kind: "menu" });
 });
 
@@ -43,21 +43,21 @@ for (const surface of ["desktop", "terminal"] as const) {
     expect(engine.opened).toEqual([{ id: "gameboy", title: "Gameboy", focus: true }]);
 
     const ui = await $.ui.mount({ ...PANE, surface });
-    for (const id of ["morpion", "snake", "tetris", "sudoku"]) {
+    for (const id of ["morpion", "hogzzle"]) {
       expect(await ui.find({ key: `game-${id}` })).toBeDefined();
     }
     await ui.unmount();
   });
 
-  test(`/gameboy <id> opens that game, soon or not, on ${surface}`, async ($, on) => {
+  test(`/gameboy <id> opens that game on ${surface}`, async ($, on) => {
     const engine = stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await gameboy($, "tetris");
+    await gameboy($, "hogzzle");
     expect(engine.opened).toHaveLength(1);
 
     const ui = await $.ui.mount({ ...PANE, surface });
-    expect(await ui.find({ type: "Text", text: "Tetris" })).toBeDefined();
-    expect(await ui.find({ type: "Text", text: /^Coming soon/ })).toBeDefined();
+    expect(await ui.find({ type: "Text", text: "Hogzzle" })).toBeDefined();
+    expect(await ui.find({ key: "pane-back" })).toBeDefined();
     await ui.unmount();
   });
 
@@ -67,7 +67,7 @@ for (const surface of ["desktop", "terminal"] as const) {
     await gameboy($, "pong");
 
     const ui = await $.ui.mount({ ...PANE, surface });
-    expect(await ui.find({ key: "game-snake" })).toBeDefined();
+    expect(await ui.find({ key: "game-hogzzle" })).toBeDefined();
     expect(await ui.find({ key: "pane-back" })).toBeUndefined();
     await ui.unmount();
   });
@@ -75,7 +75,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   test(`/gameboy stop closes the pane and keeps the game on ${surface}`, async ($, on) => {
     const engine = stubEngine(on);
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await gameboy($, "snake");
+    await gameboy($, "hogzzle");
     await gameboy($, "stop");
     expect(engine.closed).toEqual(["gameboy"]);
 
@@ -88,7 +88,7 @@ for (const surface of ["desktop", "terminal"] as const) {
     // Reopening on the menu finds the same game waiting
     await gameboy($);
     const reopened = await $.ui.mount({ ...PANE, surface });
-    expect(await reopened.find({ key: "game-snake" })).toBeDefined();
+    expect(await reopened.find({ key: "game-hogzzle" })).toBeDefined();
     await reopened.unmount();
   });
 

@@ -1,4 +1,4 @@
-export type GameId = "morpion" | "snake" | "tetris" | "sudoku";
+export type GameId = "morpion" | "hogzzle";
 type GameStatus = "available" | "soon";
 
 export type CatalogEntry = {
@@ -16,21 +16,9 @@ export const CATALOG: readonly CatalogEntry[] = [
     status: "available",
   },
   {
-    id: "snake",
-    name: "Snake",
-    tagline: "Eat the apples, avoid the walls",
-    status: "soon",
-  },
-  {
-    id: "tetris",
-    name: "Tetris",
-    tagline: "Stack the pieces, clear the lines",
-    status: "soon",
-  },
-  {
-    id: "sudoku",
-    name: "Sudoku",
-    tagline: "Fill the grid with 1 to 9",
-    status: "soon",
+    id: "hogzzle",
+    name: "Hogzzle",
+    tagline: "Swap the tiles until the hedgehog is whole",
+    status: "available",
   },
 ];

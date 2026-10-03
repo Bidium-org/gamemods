@@ -1,4 +1,6 @@
-import type { Cell, Game, Phase } from "./game";
+import type { Cell, CellBoard, Game, Phase } from "../game";
+import { MOVES, moveCursor } from "../grid";
+import { roll } from "../random";
 
 type Mark = "X" | "O";
 
@@ -56,14 +58,6 @@ const completing = (cells: MorpionState["cells"], who: Mark): number | undefined
   return undefined;
 };
 
-// One step of mulberry32: a roll in [0, 1) and the next state
-const roll = (rng: number): [number, number] => {
-  const next = (rng + 0x6d2b79f5) | 0;
-  let t = Math.imul(next ^ (next >>> 15), next | 1);
-  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-  return [((t ^ (t >>> 14)) >>> 0) / 4294967296, next];
-};
-
 // Wins when it can; otherwise, at `mistakeRate`, any free cell; otherwise blocks, then center,
 // a corner, a side
 const botMove = (cells: MorpionState["cells"], rng: number, mistakeRate: number) => {
@@ -81,16 +75,6 @@ const botMove = (cells: MorpionState["cells"], rng: number, mistakeRate: number)
 
 const withMark = (cells: MorpionState["cells"], at: number, who: Mark): MorpionState["cells"] =>
   cells.map((c, i) => (i === at ? who : c));
-
-const moveCursor = (cursor: number, id: string): number => {
-  const row = Math.floor(cursor / SIDE);
-  const col = cursor % SIDE;
-  if (id === "up" && row > 0) return cursor - SIDE;
-  if (id === "down" && row < SIDE - 1) return cursor + SIDE;
-  if (id === "left" && col > 0) return cursor - 1;
-  if (id === "right" && col < SIDE - 1) return cursor + 1;
-  return cursor;
-};
 
 // The person's X, then the bot's O when the game goes on; the streak settles on the outcome
 const place = (s: MorpionState, mistakeRate: number): MorpionState => {
@@ -130,14 +114,8 @@ const init = (seed: number): MorpionState => ({
 });
 
 // `mistakeRate` 0 is the strict bot, beaten only by a fork
-export const createMorpion = (mistakeRate: number): Game<MorpionState> => ({
-  controls: [
-    { id: "up", label: "Up", hotkey: "w" },
-    { id: "left", label: "Left", hotkey: "a" },
-    { id: "down", label: "Down", hotkey: "s" },
-    { id: "right", label: "Right", hotkey: "d" },
-    { id: "place", label: "Place", hotkey: "e" },
-  ],
+export const createMorpion = (mistakeRate: number): Game<MorpionState, CellBoard> => ({
+  controls: [...MOVES, { id: "place", label: "Place", hotkey: "e" }],
   size: { columns: 24, rows: 23 },
   init,
   // A restart after a win keeps the streak; any other restart ends it
@@ -147,9 +125,12 @@ export const createMorpion = (mistakeRate: number): Game<MorpionState> => ({
   }),
   onControl: (s, id) => {
     if (phaseOf(s.cells) !== "playing") return s;
-    return id === "place" ? place(s, mistakeRate) : { ...s, cursor: moveCursor(s.cursor, id) };
+    return id === "place"
+      ? place(s, mistakeRate)
+      : { ...s, cursor: moveCursor(s.cursor, id, SIDE, SIDE) };
   },
   board: (s) => ({
+    kind: "cells",
     cell: { width: 5, height: 3 },
     gap: 1,
     rows: ROWS.map((row) => row.map((i) => tile(s, i))),
