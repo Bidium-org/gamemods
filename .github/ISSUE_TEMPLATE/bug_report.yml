@@ -29,7 +29,7 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. Open the menu with /gameboy
+        1. Open the menu with /gamemods
         2. ...
     validations:
       required: true
