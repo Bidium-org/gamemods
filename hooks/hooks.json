@@ -1,4 +1,4 @@
 {
-  "description": "Gameboy hooks module",
+  "description": "Gamemods hooks module",
   "modules": ["./register.ts"]
 }
