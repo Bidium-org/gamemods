@@ -1,0 +1,46 @@
+name: Bug report
+description: Something does not work or draws wrong
+labels: [bug]
+body:
+  - type: input
+    id: build
+    attributes:
+      label: Claude Code build
+      description: Output of `claude --version`, or the version shown in Desktop
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Desktop (Code tab)
+        - Terminal
+        - Both
+    validations:
+      required: true
+  - type: input
+    id: window
+    attributes:
+      label: Window
+      description: Fullscreen or not, and roughly its size
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the menu with /gameboy
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshot
+      description: Desktop log lines starting with `engine surface:`, or a screenshot of the pane
