@@ -10,8 +10,6 @@ hooks/            → the single entry point: wires engine hooks to the session
 src/              → session state and transitions, band, pane and menu views, /gameboy parsing
 src/games/        → contract, catalog, registry and helpers shared by games; one folder per game, with its README
 src/render/       → Board to elements: picks the renderer by board kind and surface; text for cell boards
-assets/<id>/      → a game's source files (originals) and their notice
-scripts/          → generators of a game's `*.gen.ts` files
 tests/            → kit tests run by `claude plugin test`; shared engine stub in tests/engine.ts
 docs/             → this file, ADD_A_GAME.md
 ```
@@ -73,7 +71,7 @@ A game runs only on the game screen with no pause. One field holds the pause and
 - Every key a game reads MUST be a `hotkey` (a digit or lowercase letter) on a `Button`. Any other printable key sends the focus to the prompt. `p`, `r`, `q` belong to the session.
 - A `hotkey` goes only where it demonstrably fires: Desktop draws its key badge regardless. Menu and band buttons have none (clicked, or Tab, arrows and Enter).
 - Every render has a `$.ui.mount` test on `desktop` and `terminal`. An invalid tree makes the engine draw the site instead.
-- Files ending in `.gen.ts` are generated and committed: never edit them by hand, their header names the command that writes them.
+- Files ending in `.gen.ts` are generated and committed: never edit them by hand, their header names the script that wrote them.
 
 ## Platform constraints
 
