@@ -40,7 +40,7 @@ export const initialSession: Session = {
   best: {},
 };
 
-export const currentGame = (s: Session): Game<unknown> | undefined =>
+export const currentGame = (s: Session): Game<unknown, unknown> | undefined =>
   s.gameId ? GAMES[s.gameId] : undefined;
 
 export const pausedGameId = (s: Session): GameId | null =>
@@ -86,7 +86,12 @@ export const closePane = (s: Session): Session =>
   pause({ ...s, screen: "closed", hasFocus: false, motion: null }, "menu");
 
 // The best score follows the score up
-const advance = (s: Session, game: Game<unknown>, gameId: GameId, state: unknown): Session => {
+const advance = (
+  s: Session,
+  game: Game<unknown, unknown>,
+  gameId: GameId,
+  state: unknown,
+): Session => {
   if (state === s.state) return s;
   const best = Math.max(s.best[gameId] ?? 0, game.status(state).score);
   return { ...s, state, best: { ...s.best, [gameId]: best } };

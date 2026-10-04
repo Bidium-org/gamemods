@@ -9,7 +9,6 @@ const tile = (value: number): Cell => {
 };
 
 export const cellBoard = (grid: Grid): CellBoard => ({
-  kind: "cells",
   cell: { width: 8, height: 3 },
   gap: 1,
   rows: grid.map((row) => row.map(tile)),

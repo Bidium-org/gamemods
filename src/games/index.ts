@@ -5,7 +5,7 @@ import type { Game } from "./game";
 import { hogzzle } from "./hogzzle/hogzzle";
 import { morpion } from "./morpion/morpion";
 
-export const GAMES: Record<GameId, Game<unknown>> = {
+export const GAMES: Record<GameId, Game<unknown, unknown>> = {
   morpion,
   hogzzle,
   echo,

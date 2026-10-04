@@ -1,6 +1,4 @@
-import type { JsonValue } from "claude-code";
-import type { TileBoard } from "./2048/board";
-import type { PictureBoard } from "./hogzzle/board";
+import type { ElementTable, JsonValue, RenderElement } from "claude-code";
 
 export type Control = { id: string; label: string; hotkey: string };
 export type Cell = { ch: string; fg?: string; bg?: string };
@@ -8,13 +6,10 @@ export type Cell = { ch: string; fg?: string; bg?: string };
 // Every tile is `cell` wide and high, in layout cells, `gap` apart. Desktop draws text in a
 // proportional font: only fixed-size tiles keep a grid aligned there
 export type CellBoard = {
-  kind: "cells";
   cell: { width: number; height: number };
   gap?: number;
   rows: Cell[][];
 };
-
-export type Board = CellBoard | PictureBoard | TileBoard;
 
 export type Phase = "playing" | "won" | "lost" | "draw";
 
@@ -23,7 +18,24 @@ export type GameStatus = { phase: Phase; score: number; line: string };
 // `motion` crosses into a `Client`'s props: plain JSON, null for a move with nothing to animate
 export type Play<S> = { state: S; motion: JsonValue };
 
-export interface Game<S, B extends Board = Board> {
+// The elements a board can use on the surface it is drawn on: `Svg` only off the terminal,
+// `Client` only on it (Desktop's table lists one that never loads)
+export type BoardElements = Pick<ElementTable<"terminal">, "Box" | "Text"> & {
+  Svg?: ElementTable<"desktop">["Svg"];
+  Client?: ElementTable<"terminal">["Client"];
+};
+
+// What the session adds to a board: each renderer reads only what it needs
+export type Draw = {
+  dimmed: boolean;
+  // The game's `Play.motion` while it plays, null once settled
+  motion: JsonValue;
+  moveId: number;
+  // The pane cells left around the board, so a renderer can fit in them
+  room: { columns: number; rows: number };
+};
+
+export interface Game<S, B = CellBoard> {
   controls: Control[];
   // Pane body below which the game shows "Widen the window"
   size: { columns: number; rows: number };
@@ -39,6 +51,9 @@ export interface Game<S, B extends Board = Board> {
   resume?(s: S): S;
   // Absent, a key goes to `onControl` and nothing animates; `ms` is how long a motion is drawn
   animation?: { ms: number; play(s: S, id: string): Play<S> };
+  // Plain data: an unchanged board draws nothing
   board(s: S): B;
+  // `drawCells` for a CellBoard; null when this surface cannot draw the board
+  render(els: BoardElements, board: B, draw: Draw): RenderElement | null;
   status(s: S): GameStatus;
 }

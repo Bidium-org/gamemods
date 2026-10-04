@@ -1,9 +1,8 @@
 import type { RenderElement, RenderSurface } from "claude-code";
 import { claudeState } from "./band";
 import { CATALOG, type CatalogEntry, type GameId } from "./games/catalog";
-import type { Game } from "./games/game";
+import type { BoardElements, Game } from "./games/game";
 import { type MenuElements, menu } from "./menu";
-import { type BoardElements, drawBoard } from "./render/board";
 import { currentGame, type PauseReason, type Session } from "./session";
 
 export const WIDEN_PANE = "Widen the window to play";
@@ -17,7 +16,7 @@ export type PaneActions = {
   onRestart: () => void;
 };
 
-export type PaneElements = MenuElements & BoardElements;
+export type PaneElements = MenuElements & Partial<Pick<BoardElements, "Svg" | "Client">>;
 
 export type PaneView = {
   surface: RenderSurface;
@@ -42,11 +41,22 @@ const PAUSE_LINE: Record<PauseReason, string> = {
   menu: "Paused",
 };
 
+// Svg draws only off the terminal; Client loads only on it, although Desktop's table lists one
+const boardElements = (
+  { Box, Text, Svg, Client }: PaneElements,
+  surface: RenderSurface,
+): BoardElements => ({
+  Box,
+  Text,
+  ...(surface !== "terminal" && Svg && { Svg }),
+  ...(surface === "terminal" && Client && { Client }),
+});
+
 function gameScreen(
   els: MenuElements,
   session: Session,
   entry: CatalogEntry,
-  game: Game<unknown>,
+  game: Game<unknown, unknown>,
   drawn: RenderElement,
   actions: PaneActions,
 ): RenderElement[] {
@@ -164,7 +174,7 @@ export function pane(
     plain: true,
     onPress: actions.onBack,
   });
-  const drawn = drawBoard(els, view.surface, game.board(session.state), {
+  const drawn = game.render(boardElements(els, view.surface), game.board(session.state), {
     dimmed: session.pause !== null,
     motion: session.motion,
     moveId: session.moveId,

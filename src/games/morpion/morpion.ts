@@ -1,3 +1,4 @@
+import { drawCells } from "../cells";
 import type { Cell, CellBoard, Game, Phase } from "../game";
 import { MOVES, moveCursor } from "../grid";
 import { roll } from "../random";
@@ -130,11 +131,11 @@ export const createMorpion = (mistakeRate: number): Game<MorpionState, CellBoard
       : { ...s, cursor: moveCursor(s.cursor, id, SIDE, SIDE) };
   },
   board: (s) => ({
-    kind: "cells",
     cell: { width: 5, height: 3 },
     gap: 1,
     rows: ROWS.map((row) => row.map((i) => tile(s, i))),
   }),
+  render: drawCells,
   status: (s) => {
     const phase = phaseOf(s.cells);
     return { phase, score: s.streak, line: STATUS_LINE[phase] };

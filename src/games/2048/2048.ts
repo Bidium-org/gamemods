@@ -1,6 +1,8 @@
+import { drawCells } from "../cells";
 import type { Game, Play } from "../game";
 import { MOVES } from "../grid";
 import type { TileBoard } from "./board";
+import { cellBoard } from "./cells";
 import {
   DIRECTIONS,
   type Direction,
@@ -10,7 +12,8 @@ import {
   newGame,
   type TwentyFortyEightState,
 } from "./rules";
-import { ANIMATION_MS } from "./svg";
+import { ANIMATION_MS, tilesSvg } from "./svg";
+import { tilesClient } from "./terminal";
 
 const isDirection = (id: string): id is Direction => DIRECTIONS.some((d) => d === id);
 
@@ -26,7 +29,13 @@ export const twentyFortyEight: Game<TwentyFortyEightState, TileBoard> = {
   init: (seed) => newGame(seed),
   onControl: (s, id) => play(s, id).state,
   animation: { ms: ANIMATION_MS, play },
-  board: (s) => ({ kind: "tiles", grid: s.grid, score: s.score }),
+  board: (s) => ({ grid: s.grid, score: s.score }),
+  // Tiles that slide: a `Client` on terminal, an `Svg` on Desktop, cells elsewhere
+  render: ({ Client, Svg, ...els }, board, draw) => {
+    if (Client) return tilesClient({ Client }, board, draw);
+    if (Svg) return tilesSvg({ Svg }, board, draw);
+    return drawCells(els, cellBoard(board.grid), draw);
+  },
   status: (s) => {
     if (!hasMovesLeft(s.grid)) {
       return { phase: "lost", score: s.score, line: "No moves left · R to play again" };

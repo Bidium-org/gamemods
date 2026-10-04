@@ -1,5 +1,5 @@
 import type { ElementTable, RenderElement } from "claude-code";
-import type { Draw } from "../../render/board";
+import type { Draw } from "../game";
 import type { TileBoard } from "./board";
 import { digitColor, PALETTE, tileFill } from "./palette";
 import type { Grid, Motion, Position } from "./rules";

@@ -161,7 +161,6 @@ test("r deals a random picture at the current level when it has it", () => {
 test("the board shows the slots, the cursor and the pick", () => {
   const s = hogzzle.onControl(pickAt(puzzle(1, 0), 2), "down");
   expect(hogzzle.board(s)).toEqual({
-    kind: "picture",
     picture: "phone",
     columns: 4,
     rows: 2,
