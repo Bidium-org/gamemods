@@ -8,17 +8,6 @@ Play games in Claude Code while Claude works. Gamemods is a Claude Code mod (plu
 
 https://github.com/user-attachments/assets/4ed57392-6d74-4186-94d2-9fe6d065f97f
 
-## Games
-
-The Claude Code game mods available today. Rules, keys and score of each game are in its README.
-
-| Game                                           | What                                             | Surfaces          |
-| :--------------------------------------------- | :----------------------------------------------- | :---------------- |
-| [Tic-tac-toe](src/games/tic-tac-toe/README.md) | Three in a row against a bot                     | Desktop, terminal |
-| [Hogzzle](src/games/hogzzle/README.md)         | Swap the tiles until PostHog's hedgehog is whole | Desktop           |
-| [Echo](src/games/echo/README.md)               | Repeat a growing sequence of lit cells           | Desktop, terminal |
-| [2048](src/games/2048/README.md)               | Slide and merge the tiles until one reaches 2048 | Desktop, terminal |
-
 ## A side project, for fun
 
 Gamemods started as a way to try Claude Code mods and to have a good time doing it. It is not a productivity tool and it does not take itself too seriously: think of it as an arcade cabinet for Claude, where you play a round while Claude works. It feels good to ship something fun next to the everyday grind.
@@ -61,6 +50,17 @@ Every game has these keys; its own are in its README.
 The game pauses on its own when Claude asks for a permission, when Claude finishes its turn, and when the pane loses the keyboard. It never resumes by itself: press `p`.
 
 Each game has its own score, described in its README. The best score of each game is kept across sessions.
+
+## Games
+
+The Claude Code game mods available today. Rules, keys and score of each game are in its README.
+
+| Game                                           | What                                             | Surfaces          |
+| :--------------------------------------------- | :----------------------------------------------- | :---------------- |
+| [Tic-tac-toe](src/games/tic-tac-toe/README.md) | Three in a row against a bot                     | Desktop, terminal |
+| [Hogzzle](src/games/hogzzle/README.md)         | Swap the tiles until PostHog's hedgehog is whole | Desktop           |
+| [Echo](src/games/echo/README.md)               | Repeat a growing sequence of lit cells           | Desktop, terminal |
+| [2048](src/games/2048/README.md)               | Slide and merge the tiles until one reaches 2048 | Desktop, terminal |
 
 ## Limitations
 
