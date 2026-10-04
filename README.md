@@ -10,12 +10,12 @@ Play games in Claude Code while Claude works. Gamemods is a Claude Code mod (plu
 
 The Claude Code game mods available today. Rules, keys and score of each game are in its README.
 
-| Game                                   | What                                             | Surfaces          |
-| :------------------------------------- | :----------------------------------------------- | :---------------- |
-| [Morpion](src/games/morpion/README.md) | Tic-tac-toe against a bot                        | Desktop, terminal |
-| [Hogzzle](src/games/hogzzle/README.md) | Swap the tiles until PostHog's hedgehog is whole | Desktop           |
-| [Echo](src/games/echo/README.md)       | Repeat a growing sequence of lit cells           | Desktop, terminal |
-| [2048](src/games/2048/README.md)       | Slide and merge the tiles until one reaches 2048 | Desktop, terminal |
+| Game                                           | What                                             | Surfaces          |
+| :--------------------------------------------- | :----------------------------------------------- | :---------------- |
+| [Tic-tac-toe](src/games/tic-tac-toe/README.md) | Three in a row against a bot                     | Desktop, terminal |
+| [Hogzzle](src/games/hogzzle/README.md)         | Swap the tiles until PostHog's hedgehog is whole | Desktop           |
+| [Echo](src/games/echo/README.md)               | Repeat a growing sequence of lit cells           | Desktop, terminal |
+| [2048](src/games/2048/README.md)               | Slide and merge the tiles until one reaches 2048 | Desktop, terminal |
 
 ## A side project, for fun
 
@@ -45,7 +45,7 @@ Or inside a Claude Code session: `/plugin marketplace add Birium/gamemods`, then
 ## Play
 
 - **Open the menu:** press **Games** on the `GAMEMODS` line above the prompt (click, or Tab then Enter), or type `/gamemods`.
-- **Start a game:** pick it in the menu, or type `/gamemods <game>` (`/gamemods morpion`). `/gamemods stop` closes the pane.
+- **Start a game:** pick it in the menu, or type `/gamemods <game>` (`/gamemods tic-tac-toe`). `/gamemods stop` closes the pane.
 - **Give it the keyboard:** on Desktop, click inside the pane once.
 
 Every game has these keys; its own are in its README.

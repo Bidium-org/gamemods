@@ -1,6 +1,6 @@
-# Morpion
+# Tic-tac-toe
 
-Tic-tac-toe against a bot. You play X, the bot answers with O in the same step. The bot plays well but makes a random move about one time in three.
+Three in a row against a bot. You play X, the bot answers with O in the same step. The bot plays well but makes a random move about one time in three.
 
 ## Play
 

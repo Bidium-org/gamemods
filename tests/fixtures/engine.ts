@@ -156,10 +156,10 @@ export const paneWith = ({
 export const UNFOCUSED = paneWith({ isFocused: false });
 
 // A session with `id` open from the band, its pane mounted: what most tests start from
-export async function openGame(
+export async function openGame<S extends Surface>(
   $: Engine,
   on: On,
-  surface: Surface,
+  surface: S,
   id: GameId,
   { pane = paneWith(), ...options }: StubOptions & { pane?: ReturnType<typeof paneWith> } = {},
 ) {

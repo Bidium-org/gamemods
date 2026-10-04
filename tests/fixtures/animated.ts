@@ -3,7 +3,7 @@ import { twentyFortyEight } from "../../src/games/2048/2048";
 import type { GameId } from "../../src/games/index";
 import { chooseGame, initialSession, type Session } from "../../src/session";
 import { isMoving } from "../games/2048/fixture";
-import { SEED, type Surface } from "./engine";
+import { SEED } from "./engine";
 
 // The reference game with an animation: 2048
 export const ANIMATED: GameId = "2048";
@@ -34,5 +34,5 @@ export const { FIRST_MOVE, SECOND_MOVE, NO_MOVE } = pickControls();
 export const animated = (): Session => chooseGame(initialSession, ANIMATED, SEED);
 
 // Whether the board drawn on a Desktop pane is in motion
-export const isBoardMoving = async <S extends Surface>(ui: Mounted<S, "Pane">) =>
+export const isBoardMoving = async (ui: Mounted<"desktop", "Pane">) =>
   isMoving(String((await ui.find({ type: "Svg" }))?.props.source));

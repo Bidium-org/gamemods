@@ -60,13 +60,12 @@ for (const surface of SURFACES) {
 
   for (const id of GAME_IDS) {
     const { name, game } = GAMES[id];
-    test(`a pane below ${name}'s size asks for a wider window on ${surface}`, async ($, on) => {
+    test(`a pane below ${name}'s size hides it, asking for a wider window if ${surface} draws it`, async ($, on) => {
       const pane = paneWith({ bodyRows: game.size.rows - 1 });
       const { ui } = await openGame($, on, surface, id, { pane });
-      // A game this surface cannot draw says so before its size matters
-      if (await ui.find({ type: "Text", text: NOT_ON_SURFACE })) return;
-
-      expect(await ui.find({ type: "Text", text: WIDEN_PANE })).toBeDefined();
+      // A game this surface cannot draw says so instead, whatever the room
+      const isDrawn = !(await ui.find({ type: "Text", text: NOT_ON_SURFACE }));
+      expect(Boolean(await ui.find({ type: "Text", text: WIDEN_PANE }))).toBe(isDrawn);
       for (const control of game.controls) {
         expect(await ui.find({ key: `control-${control.id}` })).toBeUndefined();
       }
@@ -76,8 +75,8 @@ for (const surface of SURFACES) {
     });
   }
 
-  test(`Morpion draws its board as text on ${surface}`, async ($, on) => {
-    const { ui } = await openGame($, on, surface, "morpion");
+  test(`Tic-tac-toe draws its board as text on ${surface}`, async ($, on) => {
+    const { ui } = await openGame($, on, surface, "tic-tac-toe");
     expect(await ui.find({ key: "board-row-2" })).toBeDefined();
     expect(await ui.find({ type: "Svg" })).toBeUndefined();
     expect(await ui.find({ type: "Client" })).toBeUndefined();

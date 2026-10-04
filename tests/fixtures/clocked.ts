@@ -13,8 +13,13 @@ const START = echo.init(SEED);
 if (echo.tickMs === undefined) throw new Error("the clocked game has no tickMs");
 export const PERIOD = echo.tickMs;
 
-// From the start to the first answer: the round's playback
+// From the start to the first answer: the round's playback. Its last tick changes what the game
+// shows: the answer starts
 export const PLAYBACK_MS = ticksUntilAnswer(START).count * PERIOD;
+
+// The answer counts down in ticks but shows whole seconds: the tick after QUIET_TICK_MS changes
+// the state and nothing shown
+export const QUIET_TICK_MS = PLAYBACK_MS;
 
 // Answers the round's first step, once the playback is over
 const ANSWERING = toAnswer(START);
@@ -32,10 +37,9 @@ export const runClock = (s: Session, ms: number): Session =>
 // The clock time a game left unanswered takes to end
 export const END_MS = (() => {
   let s = clocked();
-  let ms = 0;
-  while (GAMES[CLOCKED].game.status(s.state).phase === "playing") {
+  for (let ms = 0; ms <= 10 * 60_000; ms += PERIOD) {
+    if (GAMES[CLOCKED].game.status(s.state).phase !== "playing") return ms;
     s = tick(s);
-    ms += PERIOD;
   }
-  return ms;
+  throw new Error("the clocked game left unanswered does not end within 10 minutes");
 })();

@@ -20,6 +20,7 @@ import {
   END_MS,
   PERIOD,
   PLAYBACK_MS,
+  QUIET_TICK_MS,
   runClock,
 } from "../fixtures/clocked";
 import { openGame, pressControls, SEED, SURFACES } from "../fixtures/engine";
@@ -47,11 +48,11 @@ test("a tick advances a running game and leaves a paused one untouched", () => {
 });
 
 test("a tick changes the game view only when it changes what the game shows", () => {
-  const answering = runClock(clocked(), PLAYBACK_MS);
-  const next = tick(answering);
-  expect(next.state).not.toEqual(answering.state);
-  expect(gameView(next)).toBe(gameView(answering));
-  expect(gameView(answering)).not.toBe(gameView(runClock(clocked(), PLAYBACK_MS - PERIOD)));
+  const quiet = runClock(clocked(), QUIET_TICK_MS);
+  expect(tick(quiet).state).not.toEqual(quiet.state);
+  expect(gameView(tick(quiet))).toBe(gameView(quiet));
+  const playbackEnd = runClock(clocked(), PLAYBACK_MS - PERIOD);
+  expect(gameView(tick(playbackEnd))).not.toBe(gameView(playbackEnd));
 });
 
 test("lifting the pause hands the state to the game's resume", () => {

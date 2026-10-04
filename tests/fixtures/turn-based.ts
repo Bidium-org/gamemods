@@ -1,15 +1,15 @@
 import { GAMES, type GameId } from "../../src/games/index";
-import { morpion } from "../../src/games/morpion/morpion";
+import { ticTacToe } from "../../src/games/tic-tac-toe/tic-tac-toe";
 import { chooseGame, control, initialSession, type Session } from "../../src/session";
-import { DRAW, WIN } from "../games/morpion/fixture";
+import { DRAW, WIN } from "../games/tic-tac-toe/fixture";
 import { SEED } from "./engine";
 import { movesTo } from "./grid";
 
-// The reference game without a clock or an animation: Morpion
-export const TURN_BASED: GameId = "morpion";
+// The reference game without a clock or an animation: Tic-tac-toe
+export const TURN_BASED: GameId = "tic-tac-toe";
 
-const START = morpion.init(SEED);
-const SIDE = morpion.board(START).rows.length;
+const START = ticTacToe.init(SEED);
+const SIDE = ticTacToe.board(START).rows.length;
 
 // The controls that place X on `cells` in turn; placing leaves the cursor where it is
 const controlsFor = (cells: number[]): string[] => {
