@@ -21,7 +21,7 @@ Games are pure (state in, state out, no `$`). How to add one: `docs/ADD_A_GAME.m
 **Session start.**
 
 1. `session.start` in `hooks/register.ts` registers `/gamemods` with `immediate: true`.
-2. `loadBest()` reads `best:<id>` from `$.store` for every `available` game of `src/games/catalog.ts`.
+2. `loadBest()` reads `best:<id>` from `$.store` for every game of `src/games/catalog.ts`.
 
 **Open from the band.**
 
