@@ -1,17 +1,31 @@
 import { expect, test } from "claude-code/testing";
 import { WIDEN } from "../../src/band";
 import { parseArgs } from "../../src/command";
-import { BAND, gamemods, PANE, PANE_OPENED, SURFACES, startSession } from "../fixtures/engine";
+import { GAME_IDS, GAMES } from "../../src/games/index";
+import { pauseLine } from "../../src/pane";
+import {
+  A_GAME,
+  BAND,
+  gamemods,
+  PANE,
+  PANE_OPENED,
+  SURFACES,
+  startSession,
+} from "../fixtures/engine";
+import { TURN_BASED } from "../fixtures/turn-based";
+
+const UNKNOWN = "not-a-game";
 
 test("no argument opens the menu", () => {
   expect(parseArgs("")).toEqual({ kind: "menu" });
   expect(parseArgs("   ")).toEqual({ kind: "menu" });
 });
 
-test("a known game id targets that game", () => {
-  expect(parseArgs("morpion")).toEqual({ kind: "game", id: "morpion" });
-  expect(parseArgs("  Hogzzle ")).toEqual({ kind: "game", id: "hogzzle" });
-  expect(parseArgs("2048")).toEqual({ kind: "game", id: "2048" });
+test("every game id targets that game, case and surrounding spaces ignored", () => {
+  for (const id of GAME_IDS) {
+    expect(parseArgs(id)).toEqual({ kind: "game", id });
+    expect(parseArgs(`  ${id.toUpperCase()} `)).toEqual({ kind: "game", id });
+  }
 });
 
 test("stop closes the pane", () => {
@@ -20,12 +34,15 @@ test("stop closes the pane", () => {
 });
 
 test("an unknown id opens the menu", () => {
-  expect(parseArgs("pong")).toEqual({ kind: "menu" });
+  expect(GAME_IDS).not.toContain(UNKNOWN);
+  expect(parseArgs(UNKNOWN)).toEqual({ kind: "menu" });
 });
 
 test("only the first word counts", () => {
-  expect(parseArgs("hogzzle now")).toEqual({ kind: "game", id: "hogzzle" });
-  expect(parseArgs("pong morpion")).toEqual({ kind: "menu" });
+  for (const id of GAME_IDS) {
+    expect(parseArgs(`${id} now`)).toEqual({ kind: "game", id });
+    expect(parseArgs(`${UNKNOWN} ${id}`)).toEqual({ kind: "menu" });
+  }
 });
 
 for (const surface of SURFACES) {
@@ -36,42 +53,45 @@ for (const surface of SURFACES) {
     ]);
   });
 
-  test(`/gamemodsopens the pane on its menu on ${surface}`, async ($, on) => {
+  test(`/gamemods opens the pane on its menu on ${surface}`, async ($, on) => {
     const engine = await startSession($, on, surface);
     await gamemods($);
     expect(engine.opened).toEqual([PANE_OPENED]);
 
     const ui = await $.ui.mount({ ...PANE, surface });
-    for (const id of ["morpion", "hogzzle", "2048"]) {
+    for (const id of GAME_IDS) {
       expect(await ui.find({ key: `game-${id}` })).toBeDefined();
     }
     await ui.unmount();
   });
 
-  test(`/gamemods<id> opens that game on ${surface}`, async ($, on) => {
+  test(`/gamemods <id> opens that game on ${surface}`, async ($, on) => {
     const engine = await startSession($, on, surface);
-    await gamemods($, "hogzzle");
-    expect(engine.opened).toHaveLength(1);
+    for (const id of GAME_IDS) {
+      await gamemods($, id);
+      expect(engine.opened.at(-1)).toEqual(PANE_OPENED);
 
-    const ui = await $.ui.mount({ ...PANE, surface });
-    expect(await ui.find({ type: "Text", text: "Hogzzle" })).toBeDefined();
-    expect(await ui.find({ key: "pane-back" })).toBeDefined();
-    await ui.unmount();
+      const ui = await $.ui.mount({ ...PANE, surface });
+      expect(await ui.find({ type: "Text", text: GAMES[id].name })).toBeDefined();
+      expect(await ui.find({ key: "pane-back" })).toBeDefined();
+      await ui.unmount();
+    }
   });
 
-  test(`/gamemodswith an unknown id opens the menu on ${surface}`, async ($, on) => {
+  test(`/gamemods with an unknown id opens the menu on ${surface}`, async ($, on) => {
     await startSession($, on, surface);
-    await gamemods($, "pong");
+    await gamemods($, UNKNOWN);
 
     const ui = await $.ui.mount({ ...PANE, surface });
-    expect(await ui.find({ key: "game-hogzzle" })).toBeDefined();
+    expect(await ui.find({ key: `game-${A_GAME}` })).toBeDefined();
     expect(await ui.find({ key: "pane-back" })).toBeUndefined();
     await ui.unmount();
   });
 
-  test(`/gamemodsstop closes the pane and keeps the game on ${surface}`, async ($, on) => {
+  // The kit cannot raise the person's close mark: `/gamemods stop` takes the same transition
+  test(`/gamemods stop closes the pane and keeps the game, paused, on ${surface}`, async ($, on) => {
     const engine = await startSession($, on, surface);
-    await gamemods($, "hogzzle");
+    await gamemods($, TURN_BASED);
     await gamemods($, "stop");
     expect(engine.closed).toEqual(["gamemods"]);
 
@@ -81,16 +101,15 @@ for (const surface of SURFACES) {
     expect(await closed.find({ key: "pane-back" })).toBeUndefined();
     await closed.unmount();
 
-    // Reopening on the menu finds the same game waiting
-    await gamemods($);
+    await gamemods($, TURN_BASED);
     const reopened = await $.ui.mount({ ...PANE, surface });
-    expect(await reopened.find({ key: "game-hogzzle" })).toBeDefined();
+    expect(await reopened.find({ type: "Text", text: pauseLine("menu") })).toBeDefined();
     await reopened.unmount();
   });
 
   test(`an unplaced pane is explained in the band on ${surface}`, async ($, on) => {
     const engine = await startSession($, on, surface, { isPlaced: false });
-    await gamemods($, "morpion");
+    await gamemods($, A_GAME);
     expect(engine.toasts).toEqual([]);
 
     const ui = await $.ui.mount({ ...BAND, surface });
@@ -104,7 +123,7 @@ for (const surface of SURFACES) {
     await band.press({ key: "band-close" });
     await band.unmount();
 
-    await gamemods($, "morpion");
+    await gamemods($, A_GAME);
     expect(engine.toasts).toEqual([WIDEN]);
   });
 }

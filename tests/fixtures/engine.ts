@@ -119,11 +119,8 @@ export const PANE = {
   },
 } as const;
 
-// The frame the pane draws around a paused game
-export const PAUSE_FRAME = '"borderColor":"#d97757"';
-
 // The band opens a game, as in a session
-export async function openFromBand($: Engine, surface: Surface, id: GameId) {
+async function openFromBand($: Engine, surface: Surface, id: GameId) {
   const band = await $.ui.mount({ ...BAND, surface });
   await band.press({ key: "band-toggle" });
   await band.press({ key: `game-${id}` });
@@ -155,6 +152,8 @@ export const paneWith = ({
     scroll: { offset: 0, bodyRows },
   },
 });
+
+export const UNFOCUSED = paneWith({ isFocused: false });
 
 // A session with `id` open from the band, its pane mounted: what most tests start from
 export async function openGame(
@@ -200,20 +199,6 @@ export const frameColor = async <S extends Surface>(ui: Mounted<S, "Pane">) =>
 export const pressAll = async <S extends Surface>(ui: Mounted<S, "Pane">, keys: string[]) => {
   for (const key of keys) await ui.press({ key });
 };
-
-// From the center: X on 0, 8, 6, then 3 wins by a fork
-export const WINNING_KEYS = [
-  ...["control-up", "control-left", "control-place"],
-  ...["control-down", "control-down", "control-right", "control-right", "control-place"],
-  ...["control-left", "control-left", "control-place"],
-  ...["control-up", "control-place"],
-];
-
-// From seed 1, cycling left, down, right, up runs out of moves with a score of 3140
-export const LOSING_2048_KEYS = Array.from(
-  { length: 261 },
-  (_, i) => `control-${["left", "down", "right", "up"][i % 4]}`,
-);
 
 // The person typing `/gamemods <args>` at the prompt
 export const gamemods = ($: Engine, args = "") =>
