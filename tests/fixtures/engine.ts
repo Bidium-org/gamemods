@@ -1,6 +1,6 @@
 import type { Hook, On } from "claude-code";
 import { type Engine, type MockClock, type Mounted, mock } from "claude-code/testing";
-import type { GameId } from "../../src/games/index";
+import { GAME_IDS, type GameId } from "../../src/games/index";
 
 // Every test plays on both surfaces
 export const SURFACES = ["desktop", "terminal"] as const;
@@ -10,6 +10,9 @@ export type Surface = (typeof SURFACES)[number];
 export const SEED = 1;
 
 const CWD = "/work";
+
+// Any game, for a test the game does not matter to. GAMES is never empty
+export const A_GAME = GAME_IDS[0] as GameId;
 
 export const PANE_OPENED = { id: "gamemods", title: "Gamemods", focus: true };
 
@@ -180,6 +183,14 @@ export async function mountDrawn(
   await $.session.start({ surface, isInteractive: true, cwd: CWD });
   return $.ui.mount({ ...spec, surface });
 }
+
+// Presses each of the game's `controls` in turn
+export const pressControls = async <S extends Surface>(
+  ui: Mounted<S, "Pane">,
+  controls: string[],
+) => {
+  for (const id of controls) await ui.press({ key: `control-${id}` });
+};
 
 // The color of the frame around the board; none unless the game is paused
 export const frameColor = async <S extends Surface>(ui: Mounted<S, "Pane">) =>
