@@ -31,21 +31,22 @@ Each step below is optional and stands alone: a game can draw an `Svg` without a
 ### Its own board
 
 1. Write the board's type in the game's folder (`src/games/2048/board.ts`, `src/games/hogzzle/board.ts`): plain data, which the session compares to skip redraws. `board(s)` returns it; the game is a `Game<S, YourBoard>`.
-2. Write a renderer per surface in the game's folder: `(els, board, draw) → RenderElement`. Show `draw.dimmed` (the pause): Hogzzle and 2048 lay a veil on their `Svg`, 2048's `Client` fades its colors.
+2. Write a renderer per surface in the game's folder: `(els, board, draw) → RenderElement`. It draws only the board: the session header shows the score and the end of the game. Show `draw.dimmed` (the pause): Hogzzle and 2048 lay a veil on their `Svg`, 2048's `Client` fades its colors.
 3. Route them in the game's `render(els, board, draw)` by element, never by surface: `els` holds `Svg` only where it draws and `Client` only where it loads. Without the element you need, return a fallback (2048 builds a cell board, `cells.ts`) or null, which shows "not playable here". `src/games/2048/2048.ts` is the reference.
 
 ### A Desktop `Svg`
 
 - An `Svg` without `isInteractive` is drawn as an image. Its `source` stays under 131 072 characters, the largest board in motion included: test it (`tests/2048-svg.test.ts`).
 - `key`: a static picture is keyed by a hash of its `source` (`src/games/hogzzle/svg.ts`); 2048's animated one has none. Never a counter.
-- Draw only the board: the session header shows the score and the end of the game.
 
 ### A terminal `Client`
 
 - The renderer returns `Client({ key, module, props })`, written in the game's folder (`src/games/2048/terminal.ts`); the module is its own file, its default export a `ClientModule` (`src/games/2048/client.ts`).
-- `key` is a stable literal. `module` is a string literal relative to the file that writes the call (`"./client.ts"`). `props` are JSON.
-- The module reads no key: `controls` stay the game's input. It calls `setState` only on mount, on a new `moveId` and in its own `surface.every` timer.
-- Check that `claude plugin validate .claude-plugin/plugin.json` lists it under `surface modules`.
+- `key` MUST be a stable literal: a `Client` keeps its state and timers only while one with the same `key` stays in the tree.
+- `module` MUST be a string literal relative to the file that writes the call (`"./client.ts"`); a variable or a template string is refused at load. Check that `claude plugin validate .claude-plugin/plugin.json` lists it under `surface modules`.
+- `props` are JSON: a motion that reaches one is plain data.
+- The module reads no key: `controls` stay the game's input. It MUST call `setState` only on mount, on a new `moveId` and in its own `surface.every` timer: the engine unmounts a `Client` that calls `setState` on three consecutive renders with nothing changed (props, key, pointer, tick).
+- With no motion it draws the settled board, whatever its own timer holds.
 
 ### Animation
 

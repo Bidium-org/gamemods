@@ -105,15 +105,8 @@ Each game draws its own board: `render(els, board, draw)` of its `Game`. The pan
   - `dimmed`: the game is paused. Every renderer shows it.
   - `motion` and `moveId`: the running move's animation, null once settled, and the count of moves that changed a state, never reset. A renderer tells a new move from a redraw by `moveId`.
   - `room`: the columns and rows left to the board once the header, the legend, the frame and their gaps (`CHROME_ROWS` in `src/pane.ts`) and the unfocused hint are taken.
-- A renderer draws only the board: the session header shows the score and the end of the game.
 
-**A terminal `Client`.** A board's terminal renderer may return a `Client`, a renderer only: props in, drawing out, animated locally with `surface.every`. No `onKey`, no game state, no randomness; keys stay `Button` hotkeys in the hooks module's tree.
-
-- Its `key` MUST be stable: a `Client` keeps its state and timers only while one with the same `key` stays in the tree.
-- It MUST call `setState` only on mount, on a new `moveId` and in its own timer. The engine unmounts a `Client` that calls `setState` on three consecutive renders with nothing changed (props, key, pointer, tick).
-- Its `module` MUST be a string literal relative to the file that writes the `Client` call (`"./client.ts"` in `src/games/2048/terminal.ts`); a variable or a template string is refused at load. `claude plugin validate .claude-plugin/plugin.json` lists the modules it found.
-- Its props are JSON: a motion that reaches one is plain data.
-- With no motion it draws the settled board, whatever its own timer holds.
+**A terminal `Client`.** A board's terminal renderer may return a `Client`, a renderer only: props in, drawing out, animated locally with `surface.every`. No `onKey`, no game state, no randomness; keys stay `Button` hotkeys in the hooks module's tree. How to write one: [ADD_A_GAME.md → A terminal `Client`](ADD_A_GAME.md#a-terminal-client).
 
 ## Conventions
 
@@ -130,7 +123,7 @@ Each game draws its own board: `render(els, board, draw)` of its `Game`. The pan
 Measured on Desktop 2.1.286 and terminal 2.1.287 unless a build is named. A new Claude Code build can change any of these.
 
 - **No `Client` on Desktop.** It never loads there (content security policy, 2.1.286), although the types list it. Loop, state and input all live in the hooks module, and every Desktop view is a tree returned by `ui.render`.
-- **`Client` on terminal, as a renderer.** It loads and draws on terminal 2.1.288, with input left to `Button` hotkeys, which fire even after a click on it. Its `module` literal resolves relative to the file that writes it, not to the hooks module. Rules: [Renderers](#renderers).
+- **`Client` on terminal, as a renderer.** It loads and draws on terminal 2.1.288, with input left to `Button` hotkeys, which fire even after a click on it. Its `module` literal resolves relative to the file that writes it, not to the hooks module. Rules: [ADD_A_GAME.md → A terminal `Client`](ADD_A_GAME.md#a-terminal-client).
 - **An animated `Svg` replays at every redraw on Desktop.** Without `isInteractive` it is drawn as an image whose CSS `@keyframes` play when the drawing comes in, and play again at each redraw, a click inside or outside it included (Desktop app 2.19675.0, CLI 2.1.288). Hence the [animation timer](#the-two-clocks).
 - **Proportional font on Desktop.** A grid drawn with characters never aligns. `drawCells()` in `src/games/cells.ts` draws each cell as a fixed-size `Box` with its glyph centered; the terminal, monospace, aligns both.
 - **No focus at open on Desktop.** Neither after a band press nor after `/gamemods`, despite `focus: true`; the terminal grants it. A click gives the keys only if it lands inside the drawn tree, so the pane's root `Box` takes `minHeight` of the body rows. The pane shows a "click to play" hint while unfocused.
