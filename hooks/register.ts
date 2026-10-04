@@ -1,7 +1,7 @@
 import type { EngineInterface, Register, Timer } from "claude-code";
 import { band, WIDEN } from "../src/band";
 import { parseArgs } from "../src/command";
-import { CATALOG, type GameId } from "../src/games/catalog";
+import { GAME_IDS, type GameId } from "../src/games/index";
 import { pane } from "../src/pane";
 import {
   chooseGame,
@@ -11,11 +11,13 @@ import {
   gameView,
   hideBand,
   initialSession,
+  motionMs,
   observeFocus,
   openMenu,
   pause,
   restart,
   type Session,
+  settle,
   setWorking,
   tick,
   toggleBand,
@@ -37,6 +39,19 @@ function syncClock($: EngineInterface) {
   clock = ms === null ? null : { ms, timer: $.clock.every(ms, () => onTick($)) };
 }
 
+// Clears a played motion: Desktop replays an animated `Svg` at every redraw
+let settling: { moveId: number; timer: Timer } | null = null;
+
+function syncMotion($: EngineInterface) {
+  const ms = motionMs(session);
+  if (ms !== null && settling?.moveId === session.moveId) return;
+  settling?.timer.cancel();
+  settling =
+    ms === null
+      ? null
+      : { moveId: session.moveId, timer: $.clock.after(ms, () => commit($, settle(session))) };
+}
+
 function onTick($: EngineInterface) {
   const next = tick(session);
   void update($, next, { redraw: gameView(next) !== gameView(session) });
@@ -53,6 +68,7 @@ function commit(
   session = next;
   if (redraw) $.ui.invalidate("ui.render");
   syncClock($);
+  syncMotion($);
 }
 
 // An unplaced pane is open but undrawn: the band says why, and a toast covers a hidden band
@@ -73,7 +89,7 @@ const asScore = (stored: unknown): number => (typeof stored === "number" ? store
 
 async function loadBest($: EngineInterface): Promise<Session["best"]> {
   const best: Session["best"] = {};
-  for (const { id } of CATALOG.filter((g) => g.status === "available")) {
+  for (const id of GAME_IDS) {
     best[id] = asScore(await $.store.get(bestKey(id)));
   }
   return best;

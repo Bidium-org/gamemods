@@ -1,14 +1,13 @@
 import { expect, test } from "claude-code/testing";
+import { drawCells as boardText } from "../src/games/cells";
 import type { CellBoard } from "../src/games/game";
 import type { PictureBoard } from "../src/games/hogzzle/board";
 import { PICTURES } from "../src/games/hogzzle/pictures.gen";
 import { boardSvg, pictureSource, SVG_MAX } from "../src/games/hogzzle/svg";
 import { morpion } from "../src/games/morpion/morpion";
-import { boardText } from "../src/render/text";
 import { PANE } from "./engine";
 
 const BOARD: CellBoard = {
-  kind: "cells",
   cell: { width: 2, height: 1 },
   gap: 1,
   rows: [
@@ -25,7 +24,6 @@ const worstBoard = (picture: PictureBoard["picture"], columns: number, rows: num
   const count = columns * rows;
   const slots = Array.from({ length: count }, (_none, i) => count - 1 - i);
   const board: PictureBoard = {
-    kind: "picture",
     picture,
     columns,
     rows,

@@ -1,9 +1,9 @@
 import type { ElementTable, RenderElement } from "claude-code";
-import type { Cell, CellBoard } from "../games/game";
+import type { Cell, CellBoard } from "./game";
 
 export type TextElements = Pick<ElementTable<"terminal">, "Box" | "Text">;
 
-export function boardText(
+export function drawCells(
   { Box, Text }: TextElements,
   board: CellBoard,
   { dimmed = false } = {},

@@ -1,10 +1,9 @@
 import type { RenderElement, RenderSurface } from "claude-code";
 import { claudeState } from "./band";
-import { CATALOG, type CatalogEntry, type GameId } from "./games/catalog";
-import type { Game } from "./games/game";
+import type { BoardElements } from "./games/game";
+import { GAMES, type GameId } from "./games/index";
 import { type MenuElements, menu } from "./menu";
-import { type BoardElements, drawBoard } from "./render/board";
-import { currentGame, type PauseReason, type Session } from "./session";
+import type { PauseReason, Session } from "./session";
 
 export const WIDEN_PANE = "Widen the window to play";
 export const NOT_ON_SURFACE = "This game is not playable here yet. Play it in Claude Code Desktop.";
@@ -17,7 +16,7 @@ export type PaneActions = {
   onRestart: () => void;
 };
 
-export type PaneElements = MenuElements & BoardElements;
+export type PaneElements = MenuElements & Partial<Pick<BoardElements, "Svg" | "Client">>;
 
 export type PaneView = {
   surface: RenderSurface;
@@ -29,6 +28,11 @@ export type PaneView = {
 // Anthropic's orange: a paused game must read as paused at a glance
 const PAUSE_COLOR = "#d97757";
 
+// Header, frame and legend around the board, with the gaps between them
+const CHROME_ROWS = 9;
+// The "click to play" hint and its gap
+const HINT_ROWS = 2;
+
 const PAUSE_LINE: Record<PauseReason, string> = {
   manual: "Paused",
   focus: "Paused: the game lost the keyboard",
@@ -37,15 +41,29 @@ const PAUSE_LINE: Record<PauseReason, string> = {
   menu: "Paused",
 };
 
+// Svg draws only off the terminal; Client loads only on it, although Desktop's table lists one
+const boardElements = (
+  { Box, Text, Svg, Client }: PaneElements,
+  surface: RenderSurface,
+): BoardElements => ({
+  Box,
+  Text,
+  ...(surface !== "terminal" && Svg && { Svg }),
+  ...(surface === "terminal" && Client && { Client }),
+});
+
+const backButton = (Button: MenuElements["Button"], onBack: () => void): RenderElement =>
+  Button({ key: "pane-back", label: "Menu", hotkey: "q", plain: true, onPress: onBack });
+
 function gameScreen(
   els: MenuElements,
   session: Session,
-  entry: CatalogEntry,
-  game: Game<unknown>,
+  id: GameId,
   drawn: RenderElement,
   actions: PaneActions,
 ): RenderElement[] {
   const { Box, Text, Button } = els;
+  const { name, game } = GAMES[id];
   const status = game.status(session.state);
   const header = Box({
     flexDirection: "column",
@@ -54,10 +72,10 @@ function gameScreen(
         flexDirection: "row",
         columnGap: 2,
         children: [
-          Text({ bold: true, children: [entry.name] }),
+          Text({ bold: true, children: [name] }),
           Text({
             dimColor: true,
-            children: [`score ${status.score} · best ${session.best[entry.id] ?? 0}`],
+            children: [`score ${status.score} · best ${session.best[id] ?? 0}`],
           }),
         ],
       }),
@@ -107,13 +125,7 @@ function gameScreen(
             plain: true,
             onPress: actions.onRestart,
           }),
-          Button({
-            key: "pane-back",
-            label: "Menu",
-            hotkey: "q",
-            plain: true,
-            onPress: actions.onBack,
-          }),
+          backButton(Button, actions.onBack),
         ],
       }),
     ],
@@ -135,7 +147,7 @@ export function pane(
   actions: PaneActions,
 ): RenderElement {
   const { Box, Text, Button } = els;
-  const entry = session.screen === "game" && CATALOG.find((g) => g.id === session.gameId);
+  const id = session.screen === "game" ? session.gameId : null;
   const hint = (text: string) =>
     view.isFocused ? null : Text({ dimColor: true, children: [text] });
   // Fills the pane: on Desktop a click below the tree loses the keys, so hotkeys would go to the prompt
@@ -147,28 +159,20 @@ export function pane(
       children,
     });
 
-  if (!entry) {
+  if (!id) {
     return root([hint("Click here to use the keyboard"), menu(els, session, actions.onChoose)]);
   }
-  const title = Text({ bold: true, children: [entry.name] });
-  const back = Button({
-    key: "pane-back",
-    label: "Menu",
-    hotkey: "q",
-    plain: true,
-    onPress: actions.onBack,
-  });
-  const game = currentGame(session);
-  if (!game) {
-    return root([
-      hint("Click the game to play"),
-      title,
-      Text({ children: ["Coming soon. This game is not playable yet."] }),
-      back,
-    ]);
-  }
-  const drawn = drawBoard(els, view.surface, game.board(session.state), {
+  const { name, game } = GAMES[id];
+  const title = Text({ bold: true, children: [name] });
+  const back = backButton(Button, actions.onBack);
+  const drawn = game.render(boardElements(els, view.surface), game.board(session.state), {
     dimmed: session.pause !== null,
+    motion: session.motion,
+    moveId: session.moveId,
+    room: {
+      columns: view.bodyColumns - 2,
+      rows: view.bodyRows - CHROME_ROWS - (view.isFocused ? 0 : HINT_ROWS),
+    },
   });
   if (!drawn) {
     return root([
@@ -181,8 +185,5 @@ export function pane(
   if (view.bodyColumns < game.size.columns || view.bodyRows < game.size.rows) {
     return root([title, Text({ children: [WIDEN_PANE] }), back]);
   }
-  return root([
-    hint("Click the game to play"),
-    ...gameScreen(els, session, entry, game, drawn, actions),
-  ]);
+  return root([hint("Click the game to play"), ...gameScreen(els, session, id, drawn, actions)]);
 }

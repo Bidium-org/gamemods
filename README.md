@@ -15,6 +15,7 @@ The Claude Code game mods available today. Rules, keys and score of each game ar
 | [Morpion](src/games/morpion/README.md) | Tic-tac-toe against a bot                        | Desktop, terminal |
 | [Hogzzle](src/games/hogzzle/README.md) | Swap the tiles until PostHog's hedgehog is whole | Desktop           |
 | [Echo](src/games/echo/README.md)       | Repeat a growing sequence of lit cells           | Desktop, terminal |
+| [2048](src/games/2048/README.md)       | Slide and merge the tiles until one reaches 2048 | Desktop, terminal |
 
 ## A side project, for fun
 
@@ -63,7 +64,7 @@ Each game has its own score, described in its README. The best score of each gam
 
 - Nothing is drawn in Desktop WSL sessions, the VS Code chat panel, `claude -p` or cloud sessions.
 - On Desktop, `/gamemods` typed during a turn waits for the turn to end. During a turn, use the **Games** button instead.
-- Tested on Claude Code 2.1.286 (Desktop) and 2.1.287 (terminal). A newer build can behave differently.
+- Tested on Claude Code Desktop 2.19675.0 and terminal 2.1.288. A newer build can behave differently.
 
 ## Contributing
 

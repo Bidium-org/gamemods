@@ -1,6 +1,6 @@
-import type { GameId } from "./games/catalog";
+import type { JsonValue } from "claude-code";
 import type { Game } from "./games/game";
-import { GAMES } from "./games/index";
+import { GAMES, type GameId } from "./games/index";
 
 export type Screen = "closed" | "menu" | "game";
 
@@ -12,8 +12,12 @@ export type Session = {
   // Hidden by the band's close button, until the session ends
   bandHidden: boolean;
   gameId: GameId | null;
-  // The chosen game's state; null for a game not playable yet
+  // The chosen game's state; null before any game is chosen
   state: unknown;
+  // The last move's animation while it plays, null once settled
+  motion: JsonValue;
+  // Counts the moves that changed the state; never reset, so a renderer tells a new move apart
+  moveId: number;
   pause: PauseReason | null;
   // The pane's last `isFocused`
   hasFocus: boolean;
@@ -27,14 +31,16 @@ export const initialSession: Session = {
   bandHidden: false,
   gameId: null,
   state: null,
+  motion: null,
+  moveId: 0,
   pause: null,
   hasFocus: false,
   isWorking: false,
   best: {},
 };
 
-export const currentGame = (s: Session): Game<unknown> | undefined =>
-  s.gameId ? GAMES[s.gameId] : undefined;
+export const currentGame = (s: Session): Game<unknown, unknown, JsonValue> | undefined =>
+  s.gameId ? GAMES[s.gameId].game : undefined;
 
 export const pausedGameId = (s: Session): GameId | null =>
   s.state !== null && s.pause ? s.gameId : null;
@@ -65,19 +71,26 @@ export const chooseGame = (s: Session, id: GameId, seed: number): Session => {
   return {
     ...shown,
     gameId: id,
-    state: GAMES[id]?.init(seed) ?? null,
+    state: GAMES[id].game.init(seed),
+    motion: null,
     pause: null,
   };
 };
 
-export const openMenu = (s: Session): Session => pause({ ...s, screen: "menu" }, "menu");
+export const openMenu = (s: Session): Session =>
+  pause({ ...s, screen: "menu", motion: null }, "menu");
 
 // The game stays in memory: only the pane goes away, and its focus with it
 export const closePane = (s: Session): Session =>
-  pause({ ...s, screen: "closed", hasFocus: false }, "menu");
+  pause({ ...s, screen: "closed", hasFocus: false, motion: null }, "menu");
 
 // The best score follows the score up
-const advance = (s: Session, game: Game<unknown>, gameId: GameId, state: unknown): Session => {
+const advance = (
+  s: Session,
+  game: Game<unknown, unknown, JsonValue>,
+  gameId: GameId,
+  state: unknown,
+): Session => {
   if (state === s.state) return s;
   const best = Math.max(s.best[gameId] ?? 0, game.status(state).score);
   return { ...s, state, best: { ...s.best, [gameId]: best } };
@@ -87,8 +100,19 @@ const advance = (s: Session, game: Game<unknown>, gameId: GameId, state: unknown
 export const control = (s: Session, id: string): Session => {
   const game = currentGame(s);
   if (!game || !s.gameId || s.pause) return s;
-  return advance(s, game, s.gameId, game.onControl(s.state, id));
+  const { state, motion } = game.animation?.play(s.state, id) ?? {
+    state: game.onControl(s.state, id),
+    motion: null,
+  };
+  const next = advance(s, game, s.gameId, state);
+  return next === s ? s : { ...next, motion, moveId: s.moveId + 1 };
 };
+
+export const settle = (s: Session): Session => (s.motion === null ? s : { ...s, motion: null });
+
+// How long the motion on screen is drawn; null when none is
+export const motionMs = (s: Session): number | null =>
+  s.motion === null ? null : (currentGame(s)?.animation?.ms ?? null);
 
 // The clock's period: a game with `tickMs` runs only on the game screen, unpaused, not over
 export const clockMs = (s: Session): number | null => {
@@ -115,7 +139,7 @@ export const restart = (s: Session, seed: number): Session => {
   const game = currentGame(s);
   if (!game) return s;
   const state = game.restart?.(s.state, seed) ?? game.init(seed);
-  return { ...s, state, pause: null };
+  return { ...s, state, motion: null, pause: null };
 };
 
 // Losing the focus pauses; getting it back never resumes

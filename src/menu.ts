@@ -1,13 +1,12 @@
 import type { ElementTable, RenderElement } from "claude-code";
-import { CATALOG, type CatalogEntry, type GameId } from "./games/catalog";
+import { GAME_IDS, GAMES, type GameId } from "./games/index";
 import { pausedGameId, type Session } from "./session";
 
 export type MenuElements = Pick<ElementTable<"terminal">, "Box" | "Text" | "Button">;
 
-const describe = (entry: CatalogEntry, session: Session): string => {
-  if (entry.status === "soon") return `soon · ${entry.tagline}`;
-  const paused = pausedGameId(session) === entry.id ? ["paused"] : [];
-  return [...paused, `best ${session.best[entry.id] ?? 0}`, entry.tagline].join(" · ");
+const describe = (id: GameId, session: Session): string => {
+  const paused = pausedGameId(session) === id ? ["paused"] : [];
+  return [...paused, `best ${session.best[id] ?? 0}`, GAMES[id].tagline].join(" · ");
 };
 
 export function menu(
@@ -17,19 +16,19 @@ export function menu(
 ): RenderElement {
   return Box({
     flexDirection: "column",
-    children: CATALOG.map((entry, i) =>
+    children: GAME_IDS.map((id, i) =>
       Box({
-        key: `row-${entry.id}`,
+        key: `row-${id}`,
         flexDirection: "row",
         columnGap: 2,
         children: [
           Button({
-            key: `game-${entry.id}`,
-            label: entry.name,
+            key: `game-${id}`,
+            label: GAMES[id].name,
             ...(i === 0 && { autoFocus: true as const }),
-            onPress: () => onChoose(entry.id),
+            onPress: () => onChoose(id),
           }),
-          Text({ dimColor: true, children: [describe(entry, session)] }),
+          Text({ dimColor: true, children: [describe(id, session)] }),
         ],
       }),
     ),

@@ -10,7 +10,7 @@ for (const surface of ["desktop", "terminal"] as const) {
     await $.session.start({ surface, isInteractive: true, cwd: "/work" });
 
     const ui = await $.ui.mount({ ...PANE, surface });
-    for (const name of ["Morpion", "Hogzzle"]) {
+    for (const name of ["Morpion", "Hogzzle", "2048"]) {
       expect(await ui.find({ type: "Button", text: name })).toBeDefined();
     }
     expect(
@@ -18,6 +18,9 @@ for (const surface of ["desktop", "terminal"] as const) {
     ).toBeDefined();
     expect(
       await ui.find({ type: "Text", text: "best 0 · Swap the tiles until the hedgehog is whole" }),
+    ).toBeDefined();
+    expect(
+      await ui.find({ type: "Text", text: "best 0 · Slide the tiles, reach 2048" }),
     ).toBeDefined();
     await ui.unmount();
   });

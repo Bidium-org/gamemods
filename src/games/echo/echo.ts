@@ -1,3 +1,4 @@
+import { drawCells } from "../cells";
 import type { Cell, CellBoard, Game } from "../game";
 import { MOVES, moveCursor } from "../grid";
 import { roll } from "../random";
@@ -196,11 +197,11 @@ export const echo: Game<EchoState, CellBoard> = {
   onControl,
   tick,
   resume,
+  render: drawCells,
   board: (s) => {
     const { side, width, height } = gridOf(s.round);
     const indexes = [...Array(side).keys()];
     return {
-      kind: "cells",
       cell: { width, height },
       gap: 1,
       rows: indexes.map((row) => indexes.map((col) => tile(s, row * side + col))),

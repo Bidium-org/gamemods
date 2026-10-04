@@ -3,6 +3,7 @@ import { MOVES, moveCursor } from "../grid";
 import { roll } from "../random";
 import type { PictureBoard } from "./board";
 import { type Grid, PICTURES, type Picture } from "./pictures.gen";
+import { boardSvg } from "./svg";
 
 export type HogzzleState = {
   // Index in the game's pictures, and in that picture's grids
@@ -119,7 +120,6 @@ export const createHogzzle = (pictures: readonly Picture[]): Game<HogzzleState, 
     board: (s) => {
       const { columns, rows } = gridOf(s);
       return {
-        kind: "picture",
         picture: pictureOf(s).id,
         columns,
         rows,
@@ -129,6 +129,8 @@ export const createHogzzle = (pictures: readonly Picture[]): Game<HogzzleState, 
         isSolved: isSolved(s),
       };
     },
+    // A picture only an `Svg` draws: none on terminal yet
+    render: ({ Svg }, board, draw) => (Svg ? boardSvg({ Svg }, board, draw) : null),
     status: (s) => {
       const { columns, rows } = gridOf(s);
       const swaps = `${s.swaps} ${s.swaps === 1 ? "swap" : "swaps"}`;

@@ -48,13 +48,14 @@ Run it on Desktop, then in a terminal, for any change to the band, the pane, a g
 2. **Pane:** it opens on the right. Note whether it gets the focus at open; one click inside gives it the keyboard.
 3. **Command:** `/gamemods`, `/gamemods <game>` for each game, an unknown id (opens the menu), `/gamemods stop`. No line is added to the transcript.
 4. **Game:** the manual checks of each game's README (`src/games/<id>/README.md`); `r` restarts; `q` back to the menu, then choosing the game resumes it.
-5. **Permission dialog:** with the game focused, ask Claude for a command that needs approval (writing a file under `/tmp` with Bash). The game is paused before the dialog shows and no game key reaches the dialog.
-6. **Auto mode:** a command the classifier approves shows no dialog and does not pause the game.
-7. **Turn end:** "Claude is working" during the turn, then "Paused: Claude answered".
-8. **Escape:** with the pane focused during a turn, Escape gives the keyboard back to the prompt, pauses the game and does not interrupt the turn.
-9. **Close:** the pane's native `✕`, then reopen: the game is still there, paused.
-10. **Best score:** it survives `/reload-plugins` and a new session.
-11. **Window:** shrink it and leave fullscreen: "Widen the window to play" shows below the game's size, and the board comes back when enlarged.
+5. **Animation**, for a game with `animation`: each move plays once and settles; keys chained fast during animations are all taken (no `ui_press not handled` in the Desktop log); after it settles, a click in or out of the board, `p` or a band toggle does not replay it.
+6. **Permission dialog:** with the game focused, ask Claude for a command that needs approval (writing a file under `/tmp` with Bash). The game is paused before the dialog shows and no game key reaches the dialog.
+7. **Auto mode:** a command the classifier approves shows no dialog and does not pause the game.
+8. **Turn end:** "Claude is working" during the turn, then "Paused: Claude answered".
+9. **Escape:** with the pane focused during a turn, Escape gives the keyboard back to the prompt, pauses the game and does not interrupt the turn.
+10. **Close:** the pane's native `✕`, then reopen: the game is still there, paused.
+11. **Best score:** it survives `/reload-plugins` and a new session.
+12. **Window:** shrink it and leave fullscreen: "Widen the window to play" shows below the game's size, and the board comes back when enlarged.
 
 ## Logs
 

@@ -1,4 +1,4 @@
-import { CATALOG, type GameId } from "./games/catalog";
+import { GAME_IDS, type GameId } from "./games/index";
 
 export type Command = { kind: "menu" } | { kind: "stop" } | { kind: "game"; id: GameId };
 
@@ -6,6 +6,6 @@ export type Command = { kind: "menu" } | { kind: "stop" } | { kind: "game"; id: 
 export function parseArgs(args: string): Command {
   const word = args.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
   if (word === "stop") return { kind: "stop" };
-  const entry = CATALOG.find((g) => g.id === word);
-  return entry ? { kind: "game", id: entry.id } : { kind: "menu" };
+  const id = GAME_IDS.find((g) => g === word);
+  return id ? { kind: "game", id } : { kind: "menu" };
 }

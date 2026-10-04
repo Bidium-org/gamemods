@@ -1,6 +1,6 @@
 import type { On } from "claude-code";
 import { type Engine, type MockClock, type Mounted, mock } from "claude-code/testing";
-import type { GameId } from "../src/games/catalog";
+import type { GameId } from "../src/games/index";
 
 export type EngineLog = {
   registered: unknown[];
@@ -19,7 +19,7 @@ export function stubEngine(
   on: On,
   { isPlaced = true, stored = {} }: { isPlaced?: boolean; stored?: Record<string, unknown> } = {},
 ): EngineLog {
-  // Starts at the game seed: one whose careless bot lets WINNING_KEYS win
+  // The game seed: its careless bot lets WINNING_KEYS win; LOSING_2048_KEYS end a 2048 game
   const clock = mock.clock(on, { now: 1 });
   const log: EngineLog = { registered: [], opened: [], closed: [], toasts: [], stored, clock };
   on("session.start", () => ({ cwd: "/work" }));
@@ -96,7 +96,7 @@ export async function openFromBand($: Engine, surface: Surface, id: GameId) {
   await band.unmount();
 }
 
-export const pressAll = async (ui: Mounted<Surface, "Pane">, keys: string[]) => {
+export const pressAll = async <S extends Surface>(ui: Mounted<S, "Pane">, keys: string[]) => {
   for (const key of keys) await ui.press({ key });
 };
 
@@ -107,6 +107,12 @@ export const WINNING_KEYS = [
   ...["control-left", "control-left", "control-place"],
   ...["control-up", "control-place"],
 ];
+
+// From seed 1, cycling left, down, right, up runs out of moves with a score of 3140
+export const LOSING_2048_KEYS = Array.from(
+  { length: 261 },
+  (_, i) => `control-${["left", "down", "right", "up"][i % 4]}`,
+);
 
 // The person typing `/gamemods <args>` at the prompt
 export const gamemods = ($: Engine, args = "") =>
