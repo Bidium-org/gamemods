@@ -24,8 +24,8 @@ The pictures are © PostHog, Inc., from https://posthog.com/media, used unmodifi
 
 ## How it is built
 
-- `hogzzle.ts` is the game, pure: it describes a `PictureBoard` (`board.ts`), which picture, the grid, which piece sits in each slot, the cursor, the pick. It knows nothing of how the board is drawn.
-- `svg.ts` draws a `PictureBoard` on Desktop: the picture once in `<defs>`, one nested `<svg>` per slot whose `viewBox` shows its piece. `src/render/board.ts` routes picture boards to it. Platform limits it lives with: [ARCHITECTURE.md → Platform constraints](../../../docs/ARCHITECTURE.md#platform-constraints).
+- `hogzzle.ts` is the game, pure: it describes a `PictureBoard` (`board.ts`), which picture, the grid, which piece sits in each slot, the cursor, the pick. Its `render` only hands that board to `svg.ts` when the surface has an `Svg`.
+- `svg.ts` draws a `PictureBoard` on Desktop: the picture once in `<defs>`, one nested `<svg>` per slot whose `viewBox` shows its piece. Platform limits it lives with: [ARCHITECTURE.md → Platform constraints](../../../docs/ARCHITECTURE.md#platform-constraints).
 - `pictures.gen.ts` (names, grids, tiles that look the same) and `images.gen.ts` (the encoded pictures) were generated from PostHog's originals by a script since removed ([NOTICE.md](NOTICE.md#how-they-were-prepared)). Each picture gets the widest encoding, up to 640 px, that leaves room for the board under the `Svg` cap. Two tiles look the same when every block of an 8×8 sampling differs by at most 8 per color channel.
 
 ## Manual checks

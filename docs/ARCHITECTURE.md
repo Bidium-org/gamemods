@@ -8,8 +8,7 @@ A Claude Code mod: a game menu in the band above the prompt, the game in a pane.
 .claude-plugin/   → plugin and marketplace manifests (the repo is both); types/ is generated, ignored
 hooks/            → the single entry point: wires engine hooks to the session
 src/              → session state and transitions, band, pane and menu views, /gamemods parsing
-src/games/        → contract, catalog, registry and helpers shared by games; one folder per game, with its README
-src/render/       → Board to elements: picks the renderer by board kind and surface; text for cell boards
+src/games/        → contract, catalog, registry and helpers shared by games (`drawCells` for cell boards); one folder per game, with its README
 tests/            → kit tests run by `claude plugin test`; shared engine stub in tests/engine.ts
 docs/             → this file, ADD_A_GAME.md
 ```
@@ -42,7 +41,7 @@ Games are pure (state in, state out, no `$`). How to add one: `docs/ADD_A_GAME.m
 1. A `Button` with a `hotkey` in `src/pane.ts` → `update()` in `hooks/register.ts`.
 2. `control()` in `src/session.ts` → the game's `animation.play()` when it has one, else its `onControl()` (`src/games/<id>/<id>.ts`), ignored while paused. The session's best score follows the game's score up; a move that changed the state stores its `motion` and increments `moveId`.
 3. If the best score rose, `saveBest()` re-reads the store and writes only a higher value: `$.store` is shared by every session of the machine.
-4. `commit()` invalidates and syncs both [clocks](#the-two-clocks); the next draw goes through `drawBoard()` in `src/render/board.ts` ([Renderers](#renderers)).
+4. `commit()` invalidates and syncs both [clocks](#the-two-clocks); the next draw calls the game's `render()` ([Renderers](#renderers)).
 
 **The two clocks.** Both are synced at the end of every `commit()` in `hooks/register.ts`, from the session alone, and never touch each other.
 
@@ -92,17 +91,17 @@ A game runs only on the game screen with no pause. One field holds the pause and
 
 ## Renderers
 
-`drawBoard(els, surface, board, draw)` in `src/render/board.ts` routes by `board.kind`, then by surface. The session header, the frame (recolored while paused) and the legend stay around it; the "Widen the window" check on the game's `size` comes before any renderer.
+Each game draws its own board: `render(els, board, draw)` of its `Game`. The pane passes only the elements the surface can draw (`boardElements()` in `src/pane.ts`) and keeps the session header, the frame (recolored while paused) and the legend around the board. A null from `render` shows "not playable here"; otherwise the "Widen the window" check on the game's `size` comes before the board shows.
 
-| Kind                | Desktop                                  | Terminal                                                     |
-| :------------------ | :--------------------------------------- | :----------------------------------------------------------- |
-| `cells`             | `boardText()` in `src/render/text.ts`    | `boardText()`                                                |
-| `picture` (Hogzzle) | `Svg`, `src/games/hogzzle/svg.ts`        | none: "not playable here"                                    |
-| `tiles` (2048)      | animated `Svg`, `src/games/2048/svg.ts`  | animated `Client`, `src/games/2048/terminal.ts` + `client.ts` |
+| Game          | Desktop                                  | Terminal                                                      |
+| :------------ | :--------------------------------------- | :------------------------------------------------------------ |
+| Morpion, Echo | `drawCells()` in `src/games/cells.ts`    | `drawCells()`                                                 |
+| Hogzzle       | `Svg`, `src/games/hogzzle/svg.ts`        | none: "not playable here"                                     |
+| 2048          | animated `Svg`, `src/games/2048/svg.ts`  | animated `Client`, `src/games/2048/terminal.ts` + `client.ts` |
 
-- A surface without the element a kind needs gets its fallback: 2048 its cell board (`src/games/2048/cells.ts`), Hogzzle "not playable here".
-- The surface decides, never the element table alone: the kit's terminal table holds an `Svg`, and Desktop's types list a `Client` that never loads there.
-- `draw` (`Draw` in `src/render/board.ts`) is what the session adds to a board; a renderer reads only what it needs:
+- A game picks its renderer by the elements it gets, never by the surface: `boardElements()` gives `Svg` only off the terminal and `Client` only on it, because the kit's terminal table holds an `Svg` and Desktop's types list a `Client` that never loads there.
+- Without the element it needs, a game returns its fallback: 2048 its cell board (`src/games/2048/cells.ts`), Hogzzle null.
+- `draw` (`Draw` in `src/games/game.ts`) is what the session adds to a board; a renderer reads only what it needs:
   - `dimmed`: the game is paused. Every renderer shows it.
   - `motion` and `moveId`: the running move's animation, null once settled, and the count of moves that changed a state, never reset. A renderer tells a new move from a redraw by `moveId`.
   - `room`: the columns and rows left to the board once the header, the legend, the frame and their gaps (`CHROME_ROWS` in `src/pane.ts`) and the unfocused hint are taken.
@@ -133,7 +132,7 @@ Measured on Desktop 2.1.286 and terminal 2.1.287 unless a build is named. A new 
 - **No `Client` on Desktop.** It never loads there (content security policy, 2.1.286), although the types list it. Loop, state and input all live in the hooks module, and every Desktop view is a tree returned by `ui.render`.
 - **`Client` on terminal, as a renderer.** It loads and draws on terminal 2.1.288, with input left to `Button` hotkeys, which fire even after a click on it. Its `module` literal resolves relative to the file that writes it, not to the hooks module. Rules: [Renderers](#renderers).
 - **An animated `Svg` replays at every redraw on Desktop.** Without `isInteractive` it is drawn as an image whose CSS `@keyframes` play when the drawing comes in, and play again at each redraw, a click inside or outside it included (Desktop app 2.19675.0, CLI 2.1.288). Hence the [animation timer](#the-two-clocks).
-- **Proportional font on Desktop.** A grid drawn with characters never aligns. `src/render/text.ts` draws each cell as a fixed-size `Box` with its glyph centered; the terminal, monospace, aligns both.
+- **Proportional font on Desktop.** A grid drawn with characters never aligns. `drawCells()` in `src/games/cells.ts` draws each cell as a fixed-size `Box` with its glyph centered; the terminal, monospace, aligns both.
 - **No focus at open on Desktop.** Neither after a band press nor after `/gamemods`, despite `focus: true`; the terminal grants it. A click gives the keys only if it lands inside the drawn tree, so the pane's root `Box` takes `minHeight` of the body rows. The pane shows a "click to play" hint while unfocused.
 - **`Svg` keeps its first drawing per `key` on Desktop.** Text around it updates, the picture does not. A press counter as key replays old drawings after `/reload-plugins`, when the counter restarts: the key must be a hash of the `source` (`src/games/hogzzle/svg.ts`). The types declare no `key` on `Svg` and the test kit drops it from the drawn tree, yet Desktop reads it: only Desktop shows this. An unkeyed `Svg` takes each new `source` (2048's, Desktop app 2.19675.0). The `source` is capped at 131 072 characters.
 - **No clickable cell.** `Button` takes no size: a plain one inside a tile draws on Desktop as a small native button in its middle, never the tile; a blank label collapses it to nothing, and in a terminal the focus inverts its label into a bar. Removing the focused Button from the tree (a cell redrawn without one) takes the focus from the pane on Desktop, which pauses the game. Tried with Echo and dropped: cells are played by keys.
