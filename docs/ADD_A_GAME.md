@@ -4,8 +4,8 @@ A game is a pure object: state in, state out, no `$`. Everything it touches live
 
 ## Steps
 
-1. **Game.** Create `src/games/<id>/` and write `src/games/<id>/<id>.ts` exporting a `Game<S>` (contract in `src/games/game.ts`). Everything the game owns lives in that folder. `src/games/morpion/morpion.ts` is the reference; `src/games/echo/echo.ts` for a game with a clock.
-2. **README.** Write `src/games/<id>/README.md`: what the game is, its keys, its score, and its manual checks. `src/games/morpion/README.md` is the reference. Add a row to the games table of the root `README.md`, linking to it.
+1. **Game.** Create `src/games/<id>/` and write `src/games/<id>/<id>.ts` exporting a `Game<S>` (contract in `src/games/game.ts`). Everything the game owns lives in that folder. `src/games/tic-tac-toe/tic-tac-toe.ts` is the reference; `src/games/echo/echo.ts` for a game with a clock.
+2. **README.** Write `src/games/<id>/README.md`: what the game is, its keys, its score, and its manual checks. `src/games/tic-tac-toe/README.md` is the reference. Add a row to the games table of the root `README.md`, linking to it.
 3. **Registry.** In `src/games/index.ts`, add one entry to `ENTRIES`: `<id>: { name, tagline, game }`. The key is the game's id: typed after `/gamemods` and stored with its best score, so it never changes. The menu lists games in key order, where JS puts an integer-like id (`2048`) first. A duplicate id or a missing field fails `pnpm typecheck`.
 
 The session already handles the menu, `p` pause, `r` restart, `q` back to the menu, automatic pauses and the best score.
@@ -14,7 +14,7 @@ The session already handles the menu, `p` pause, `r` restart, `q` back to the me
 
 - `controls`: one `Button` each, with a `hotkey`. Rules: [ARCHITECTURE.md → Conventions](ARCHITECTURE.md#conventions).
 - `init(seed)`: all randomness comes from the seed, kept in the state. Same seed, same game.
-- `restart(s, seed)`: optional, defaults to `init(seed)`. Use it to carry something across games (Morpion keeps its win streak).
+- `restart(s, seed)`: optional, defaults to `init(seed)`. Use it to carry something across games (Tic-tac-toe keeps its win streak).
 - `status(s).score`: higher is better. The best score is the max ever reached, stored per game.
 - `board(s)` and `render`: a `CellBoard`, drawn with `render: drawCells` (`src/games/cells.ts`): rows of `Cell`s drawn as fixed-size boxes (`cell.width` × `cell.height`, `gap` apart, `bg` as background). Give `cell.height` an odd value: a terminal tile needs a middle row to center its glyph. Why fixed-size: [ARCHITECTURE.md → Platform constraints](ARCHITECTURE.md#platform-constraints).
 - Cells are not clickable ([ARCHITECTURE.md → Platform constraints](ARCHITECTURE.md#platform-constraints)): move a cursor with `MOVES` and `moveCursor` (`src/games/grid.ts`) and select with a key.
@@ -60,7 +60,7 @@ Each step below is optional and stands alone: a game can draw an `Svg` without a
 
 ## Tests
 
-- Logic: test the game alone with a fixed seed (`tests/morpion.test.ts`). A clock is just `tick` called in a loop (`tests/echo.test.ts`).
+- Logic: test the game alone with a fixed seed (`tests/games/tic-tac-toe/tic-tac-toe.test.ts`). A clock is just `tick` called in a loop (`tests/echo.test.ts`).
 - Clock in the pane: `stubEngine(on).clock.advance(ms)` moves time (`tests/clock.test.ts`).
 - Interface: a `$.ui.mount` test as required by [ARCHITECTURE.md → Conventions](ARCHITECTURE.md#conventions) (`tests/pane.test.ts`, fixtures in `tests/engine.ts`).
 - Beyond cells: the `Svg` source as a string, settled, in motion and paused (`tests/2048-svg.test.ts`); the `Client` mounted on `terminal`, its animation driven by `ui.advance`, through redraws, quick moves, a pause and a restart (`tests/2048-client.test.ts`); the motion in the session (`tests/session.test.ts`) and its lifetime on the mock clock (`tests/motion.test.ts`).

@@ -4,6 +4,7 @@ import { parseArgs } from "../src/command";
 import { GAME_IDS, type GameId } from "../src/games/index";
 import { pane } from "../src/pane";
 import {
+  bestKey,
   chooseGame,
   clockMs,
   closePane,
@@ -82,8 +83,6 @@ async function openPane($: EngineInterface) {
   $.ui.invalidate("ui.render");
   if (session.bandHidden) $.ui.toast(WIDEN);
 }
-
-const bestKey = (id: GameId) => `best:${id}`;
 
 const asScore = (stored: unknown): number => (typeof stored === "number" ? stored : 0);
 

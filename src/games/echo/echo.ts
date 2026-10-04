@@ -30,7 +30,7 @@ const SPEEDS: readonly [Speed, ...Speed[]] = [
   { lit: 2, dark: 1 },
 ];
 
-const COLORS = {
+export const COLORS = {
   tile: "#2e2e2e",
   cursor: "#5a5a5a",
   lit: "#5fafff",

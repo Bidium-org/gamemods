@@ -21,6 +21,9 @@ export type Play<S, M> = { state: S; motion: M | null };
 export type SvgElements = Pick<ElementTable<"desktop">, "Svg">;
 export type ClientElements = Pick<ElementTable<"terminal">, "Client">;
 
+// The engine refuses a longer Svg source
+export const SVG_MAX = 131_072;
+
 // The elements a board can use on the surface it is drawn on: `Svg` only off the terminal,
 // `Client` only on it (Desktop's table lists one that never loads)
 export type BoardElements = Pick<ElementTable<"terminal">, "Box" | "Text"> &

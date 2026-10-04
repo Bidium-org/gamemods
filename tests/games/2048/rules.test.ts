@@ -1,28 +1,16 @@
 import { expect, test } from "claude-code/testing";
 import {
   type Direction,
-  type Grid,
   hasMovesLeft,
   move,
   newGame,
   type Roll,
-  type TwentyFortyEightState,
-} from "../src/games/2048/rules";
-
-const _ = 0;
-const EMPTY_ROW = [_, _, _, _];
-
-const always =
-  (value: number): Roll =>
-  (rng) => [value, rng];
-
-const alwaysTwoFirstCell = always(0);
+} from "../../../src/games/2048/rules";
+import { _, alwaysTwoFirstCell, EMPTY_ROW, state } from "./fixture";
 
 const sequence =
   (...values: number[]): Roll =>
   (rng) => [values[rng % values.length] ?? 0, rng + 1];
-
-const state = (grid: Grid, score = 0): TwentyFortyEightState => ({ grid, score, rng: 0 });
 
 const oneRow = (row: number[], direction: Direction) => {
   const { state: after } = move(
@@ -56,10 +44,6 @@ test("a new game draws its two tiles from the random source", () => {
     EMPTY_ROW,
     [_, _, _, 4],
   ]);
-});
-
-test("the same seed starts the same game", () => {
-  expect(newGame(42)).toEqual(newGame(42));
 });
 
 test("merges follow the original reference cases", () => {

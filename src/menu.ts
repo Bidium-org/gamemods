@@ -4,7 +4,7 @@ import { pausedGameId, type Session } from "./session";
 
 export type MenuElements = Pick<ElementTable<"terminal">, "Box" | "Text" | "Button">;
 
-const describe = (id: GameId, session: Session): string => {
+export const menuLine = (id: GameId, session: Session): string => {
   const paused = pausedGameId(session) === id ? ["paused"] : [];
   return [...paused, `best ${session.best[id] ?? 0}`, GAMES[id].tagline].join(" · ");
 };
@@ -28,7 +28,7 @@ export function menu(
             ...(i === 0 && { autoFocus: true as const }),
             onPress: () => onChoose(id),
           }),
-          Text({ dimColor: true, children: [describe(id, session)] }),
+          Text({ dimColor: true, children: [menuLine(id, session)] }),
         ],
       }),
     ),

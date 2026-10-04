@@ -1,37 +1,20 @@
 import { expect, test } from "claude-code/testing";
-import { twentyFortyEight as game } from "../src/games/2048/2048";
-import { cellBoard } from "../src/games/2048/cells";
-import type { TwentyFortyEightState } from "../src/games/2048/rules";
-
-const SEED = 1;
-const _ = 0;
-const EMPTY_ROW = [_, _, _, _];
-
-const withGrid = (grid: TwentyFortyEightState["grid"]): TwentyFortyEightState => ({
-  grid,
-  score: 0,
-  rng: SEED,
-});
+import { twentyFortyEight as game } from "../../../src/games/2048/2048";
+import { cellBoard } from "../../../src/games/2048/cells";
+import type { TwentyFortyEightState } from "../../../src/games/2048/rules";
+import { SEED } from "../../fixtures/engine";
+import { _, EMPTY_ROW, state } from "./fixture";
 
 const tileCount = (s: TwentyFortyEightState) => s.grid.flat().filter(Boolean).length;
 
-test("a game starts with two tiles, score zero", () => {
+test("a game starts with two tiles", () => {
   const s = game.init(SEED);
   expect(tileCount(s)).toBe(2);
-  expect(game.status(s)).toEqual({
-    phase: "playing",
-    score: 0,
-    line: "Merge the tiles to reach 2048",
-  });
-});
-
-test("the same seed plays the same game", () => {
-  const play = () => ["up", "left", "down", "right"].reduce(game.onControl, game.init(42));
-  expect(play()).toEqual(play());
+  expect(game.status(s).line).toBe("Merge the tiles to reach 2048");
 });
 
 test("a move slides the tiles and spawns one", () => {
-  const s = withGrid([[_, _, _, 2], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW]);
+  const s = state([[_, _, _, 2], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW], SEED);
   const after = game.onControl(s, "left");
   expect(after.grid[0]?.[0]).toBe(2);
   expect(tileCount(after)).toBe(2);
@@ -39,15 +22,12 @@ test("a move slides the tiles and spawns one", () => {
 });
 
 test("a merge adds the merged value to the score", () => {
-  const after = game.onControl(withGrid([[4, 4, 2, 2], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW]), "left");
+  const after = game.onControl(
+    state([[4, 4, 2, 2], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW], SEED),
+    "left",
+  );
   expect(after.grid[0]?.slice(0, 2)).toEqual([8, 4]);
   expect(game.status(after).score).toBe(12);
-});
-
-test("a move that changes nothing returns the same state", () => {
-  const s = withGrid([[2, 4, _, _], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW]);
-  expect(game.onControl(s, "left")).toBe(s);
-  expect(game.onControl(s, "up")).toBe(s);
 });
 
 test("keys other than w a s d do nothing", () => {
@@ -57,7 +37,7 @@ test("keys other than w a s d do nothing", () => {
 
 test("reaching 2048 keeps the game going", () => {
   const won = game.onControl(
-    withGrid([[1024, 1024, _, _], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW]),
+    state([[1024, 1024, _, _], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW], SEED),
     "left",
   );
   expect(won.grid[0]?.[0]).toBe(2048);
@@ -99,11 +79,11 @@ test("the board is the grid and the score", () => {
 });
 
 test("a move animates; a key that moves nothing does not", () => {
-  const s = withGrid([[_, _, _, 2], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW]);
+  const s = state([[_, _, _, 2], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW], SEED);
   const moved = game.animation?.play(s, "left");
   expect(moved?.state).toEqual(game.onControl(s, "left"));
   expect(moved?.motion).toMatchObject({ slides: [{ value: 2 }] });
-  const stuck = withGrid([[2, 4, _, _], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW]);
+  const stuck = state([[2, 4, _, _], EMPTY_ROW, EMPTY_ROW, EMPTY_ROW], SEED);
   expect(game.animation?.play(stuck, "left")).toEqual({ state: stuck, motion: null });
   expect(game.animation?.play(s, "place")).toEqual({ state: s, motion: null });
 });

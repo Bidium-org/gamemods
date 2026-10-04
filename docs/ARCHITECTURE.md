@@ -93,11 +93,11 @@ A game runs only on the game screen with no pause. One field holds the pause and
 
 Each game draws its own board: `render(els, board, draw)` of its `Game`. The pane passes only the elements the surface can draw (`boardElements()` in `src/pane.ts`) and keeps the session header, the frame (recolored while paused) and the legend around the board. A null from `render` shows "not playable here"; otherwise the "Widen the window" check on the game's `size` comes before the board shows.
 
-| Game          | Desktop                                  | Terminal                                                      |
-| :------------ | :--------------------------------------- | :------------------------------------------------------------ |
-| Morpion, Echo | `drawCells()` in `src/games/cells.ts`    | `drawCells()`                                                 |
-| Hogzzle       | `Svg`, `src/games/hogzzle/svg.ts`        | none: "not playable here"                                     |
-| 2048          | animated `Svg`, `src/games/2048/svg.ts`  | animated `Client`, `src/games/2048/terminal.ts` + `client.ts` |
+| Game              | Desktop                                  | Terminal                                                      |
+| :---------------- | :--------------------------------------- | :------------------------------------------------------------ |
+| Tic-tac-toe, Echo | `drawCells()` in `src/games/cells.ts`    | `drawCells()`                                                 |
+| Hogzzle           | `Svg`, `src/games/hogzzle/svg.ts`        | none: "not playable here"                                     |
+| 2048              | animated `Svg`, `src/games/2048/svg.ts`  | animated `Client`, `src/games/2048/terminal.ts` + `client.ts` |
 
 - A game picks its renderer by the elements it gets, never by the surface: `boardElements()` gives `Svg` only off the terminal and `Client` only on it, because the kit's terminal table holds an `Svg` and Desktop's types list a `Client` that never loads there.
 - Without the element it needs, a game returns its fallback: 2048 its cell board (`src/games/2048/cells.ts`), Hogzzle null.
