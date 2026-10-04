@@ -1,10 +1,8 @@
-import type { ElementTable, RenderElement } from "claude-code";
-import type { Draw } from "../game";
+import type { RenderElement } from "claude-code";
+import type { ClientElements, Draw } from "../game";
 import type { TileBoard } from "./board";
 import type { BoardProps } from "./client";
 import type { Motion } from "./rules";
-
-export type ClientElements = Pick<ElementTable<"terminal">, "Client">;
 
 // `module` is read off this file's source: a literal, relative to this file
 export const tilesClient = (

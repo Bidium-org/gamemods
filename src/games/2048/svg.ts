@@ -1,10 +1,8 @@
-import type { ElementTable, RenderElement } from "claude-code";
-import type { Draw } from "../game";
+import type { RenderElement } from "claude-code";
+import type { Draw, SvgElements } from "../game";
 import type { TileBoard } from "./board";
 import { digitColor, PALETTE, tileFill } from "./palette";
 import type { Grid, Motion, Position } from "./rules";
-
-export type SvgElements = Pick<ElementTable<"desktop">, "Svg">;
 
 const SIZE = 90;
 const GAP = 12;

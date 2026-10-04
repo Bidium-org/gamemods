@@ -18,12 +18,14 @@ export type GameStatus = { phase: Phase; score: number; line: string };
 // `motion` crosses into a `Client`'s props: plain JSON, null for a move with nothing to animate
 export type Play<S, M> = { state: S; motion: M | null };
 
+export type SvgElements = Pick<ElementTable<"desktop">, "Svg">;
+export type ClientElements = Pick<ElementTable<"terminal">, "Client">;
+
 // The elements a board can use on the surface it is drawn on: `Svg` only off the terminal,
 // `Client` only on it (Desktop's table lists one that never loads)
-export type BoardElements = Pick<ElementTable<"terminal">, "Box" | "Text"> & {
-  Svg?: ElementTable<"desktop">["Svg"];
-  Client?: ElementTable<"terminal">["Client"];
-};
+export type BoardElements = Pick<ElementTable<"terminal">, "Box" | "Text"> &
+  Partial<SvgElements> &
+  Partial<ClientElements>;
 
 // What the session adds to a board: each renderer reads only what it needs
 export type Draw<M> = {

@@ -1,8 +1,7 @@
-import type { ElementTable, RenderElement } from "claude-code";
+import type { RenderElement } from "claude-code";
+import type { SvgElements } from "../game";
 import type { PictureBoard } from "./board";
 import { PICTURE_IMAGES } from "./images.gen";
-
-export type SvgElements = Pick<ElementTable<"desktop">, "Svg">;
 
 // The types give Svg no `key`, yet Desktop reads one: it keeps the first drawing of a key
 type KeyedSvg = (props: Parameters<SvgElements["Svg"]>[0] & { key: string }) => RenderElement;
