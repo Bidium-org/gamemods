@@ -89,7 +89,7 @@ const asScore = (stored: unknown): number => (typeof stored === "number" ? store
 
 async function loadBest($: EngineInterface): Promise<Session["best"]> {
   const best: Session["best"] = {};
-  for (const { id } of CATALOG.filter((g) => g.status === "available")) {
+  for (const { id } of CATALOG) {
     best[id] = asScore(await $.store.get(bestKey(id)));
   }
   return best;

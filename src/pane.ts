@@ -141,6 +141,7 @@ export function pane(
 ): RenderElement {
   const { Box, Text, Button } = els;
   const entry = session.screen === "game" && CATALOG.find((g) => g.id === session.gameId);
+  const game = currentGame(session);
   const hint = (text: string) =>
     view.isFocused ? null : Text({ dimColor: true, children: [text] });
   // Fills the pane: on Desktop a click below the tree loses the keys, so hotkeys would go to the prompt
@@ -152,7 +153,7 @@ export function pane(
       children,
     });
 
-  if (!entry) {
+  if (!entry || !game) {
     return root([hint("Click here to use the keyboard"), menu(els, session, actions.onChoose)]);
   }
   const title = Text({ bold: true, children: [entry.name] });
@@ -163,15 +164,6 @@ export function pane(
     plain: true,
     onPress: actions.onBack,
   });
-  const game = currentGame(session);
-  if (!game) {
-    return root([
-      hint("Click the game to play"),
-      title,
-      Text({ children: ["Coming soon. This game is not playable yet."] }),
-      back,
-    ]);
-  }
   const drawn = drawBoard(els, view.surface, game.board(session.state), {
     dimmed: session.pause !== null,
     motion: session.motion,

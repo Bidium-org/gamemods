@@ -5,7 +5,6 @@ import { pausedGameId, type Session } from "./session";
 export type MenuElements = Pick<ElementTable<"terminal">, "Box" | "Text" | "Button">;
 
 const describe = (entry: CatalogEntry, session: Session): string => {
-  if (entry.status === "soon") return `soon · ${entry.tagline}`;
   const paused = pausedGameId(session) === entry.id ? ["paused"] : [];
   return [...paused, `best ${session.best[entry.id] ?? 0}`, entry.tagline].join(" · ");
 };

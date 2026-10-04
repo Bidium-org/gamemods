@@ -13,7 +13,7 @@ export type Session = {
   // Hidden by the band's close button, until the session ends
   bandHidden: boolean;
   gameId: GameId | null;
-  // The chosen game's state; null for a game not playable yet
+  // The chosen game's state; null before any game is chosen
   state: unknown;
   // The last move's animation while it plays, null once settled
   motion: JsonValue;
@@ -72,7 +72,7 @@ export const chooseGame = (s: Session, id: GameId, seed: number): Session => {
   return {
     ...shown,
     gameId: id,
-    state: GAMES[id]?.init(seed) ?? null,
+    state: GAMES[id].init(seed),
     motion: null,
     pause: null,
   };
