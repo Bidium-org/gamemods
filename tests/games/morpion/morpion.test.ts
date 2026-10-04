@@ -1,6 +1,7 @@
 import { expect, test } from "claude-code/testing";
 import { createMorpion, type MorpionState } from "../../../src/games/morpion/morpion";
 import { SEED } from "../../fixtures/engine";
+import { DRAW, WIN } from "./fixture";
 
 const _ = null;
 
@@ -59,19 +60,19 @@ test("the bot wins rather than blocks", () => {
 });
 
 test("a fork beats the bot and the streak grows", () => {
-  const s = playAll([0, 8, 6, 3]);
+  const s = playAll(WIN);
   expect(s.cells).toEqual(["X", _, "O", "X", "O", _, "X", "O", "X"]);
   expect(morpion.status(s)).toEqual({ phase: "won", score: 1, line: "You win" });
 });
 
 test("a full board without a line is a draw and ends the streak", () => {
-  const s = playAll([4, 2, 3, 1, 8], { ...morpion.init(SEED), streak: 3 });
+  const s = playAll(DRAW, { ...morpion.init(SEED), streak: 3 });
   expect(s.cells.every(Boolean)).toBe(true);
   expect(morpion.status(s)).toEqual({ phase: "draw", score: 0, line: "Draw" });
 });
 
 test("an ended game ignores the game keys", () => {
-  const won = playAll([0, 8, 6, 3]);
+  const won = playAll(WIN);
   for (const id of ["up", "left", "down", "right", "place"]) {
     expect(morpion.onControl(won, id)).toBe(won);
   }
@@ -79,7 +80,7 @@ test("an ended game ignores the game keys", () => {
 });
 
 test("a restart after a win keeps the streak", () => {
-  const again = morpion.restart?.(playAll([0, 8, 6, 3]), SEED);
+  const again = morpion.restart?.(playAll(WIN), SEED);
   expect(again).toEqual({ ...morpion.init(SEED), streak: 1 });
 });
 
@@ -98,7 +99,7 @@ test("the board draws 3 by 3 tiles, the cursor's lighter while playing", () => {
   const backgrounds = (rows: typeof board.rows) => new Set(rows.flat().map((c) => c.bg));
   expect(backgrounds(board.rows).size).toBe(2);
   expect(board.rows[0]?.[0]?.bg).not.toBe(board.rows[0]?.[1]?.bg);
-  expect(backgrounds(morpion.board(playAll([0, 8, 6, 3])).rows).size).toBe(1);
+  expect(backgrounds(morpion.board(playAll(WIN)).rows).size).toBe(1);
 });
 
 test("a careless bot still wins when it can", () => {

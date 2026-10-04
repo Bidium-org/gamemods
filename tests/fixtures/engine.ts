@@ -181,6 +181,11 @@ export async function mountDrawn(
   return $.ui.mount({ ...spec, surface });
 }
 
+// The color of the frame around the board; none unless the game is paused
+export const frameColor = async <S extends Surface>(ui: Mounted<S, "Pane">) =>
+  (await ui.findAll({ type: "Box" })).find((box) => box.props.borderStyle === "round")?.props
+    .borderColor;
+
 export const pressAll = async <S extends Surface>(ui: Mounted<S, "Pane">, keys: string[]) => {
   for (const key of keys) await ui.press({ key });
 };

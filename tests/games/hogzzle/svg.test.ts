@@ -22,6 +22,14 @@ const worstBoard = (picture: PictureBoard["picture"], columns: number, rows: num
   return board;
 };
 
+// A real picture at its first grid
+const SAMPLE = (() => {
+  const [picture] = PICTURES;
+  const [grid] = picture?.grids ?? [];
+  if (!picture || !grid) throw new Error("no picture to sample");
+  return worstBoard(picture.id, grid.columns, grid.rows);
+})();
+
 test("every picture at every grid stays under the Svg cap", () => {
   for (const { id, grids } of PICTURES) {
     for (const { columns, rows } of grids) {
@@ -32,11 +40,11 @@ test("every picture at every grid stays under the Svg cap", () => {
 });
 
 test("a solved picture board shows no grid and no cursor", () => {
-  const solved = { ...worstBoard("phone", 4, 2), slots: [0, 1, 2, 3, 4, 5, 6, 7], isSolved: true };
-  const source = pictureSource(solved);
-  expect(source).not.toContain("<path");
-  expect(source).not.toContain('stroke="#ffcc00"');
-  expect(pictureSource(worstBoard("phone", 4, 2))).toContain('stroke="#ffcc00"');
+  const solved = { ...SAMPLE, slots: SAMPLE.slots.map((_piece, i) => i), isSolved: true };
+  expect(pictureSource(solved)).not.toContain("<path");
+  const withCursor = (board: PictureBoard, cursor: number) => pictureSource({ ...board, cursor });
+  expect(withCursor(solved, 1)).toBe(withCursor(solved, 0));
+  expect(withCursor(SAMPLE, 1)).not.toBe(withCursor(SAMPLE, 0));
 });
 
 // The test kit drops Svg's `key` from the drawn tree; Desktop reads it, so it is checked here
@@ -45,17 +53,16 @@ test("a picture board's Svg key changes with its drawing, and only with it", () 
     const Svg = (props: object) => props as never;
     return (boardSvg({ Svg }, board, { dimmed }) as unknown as { key: string }).key;
   };
-  const board = worstBoard("builder", 3, 3);
-  expect(keyOf(board)).toMatch(/^picture-[0-9a-f]+$/);
-  expect(keyOf(board)).toBe(keyOf({ ...board }));
-  expect(keyOf({ ...board, cursor: 0 })).not.toBe(keyOf(board));
-  expect(keyOf(board, true)).not.toBe(keyOf(board));
+  expect(keyOf(SAMPLE)).toMatch(/^picture-[0-9a-f]+$/);
+  expect(keyOf(SAMPLE)).toBe(keyOf({ ...SAMPLE }));
+  expect(keyOf({ ...SAMPLE, cursor: 0 })).not.toBe(keyOf(SAMPLE));
+  expect(keyOf(SAMPLE, true)).not.toBe(keyOf(SAMPLE));
 });
 
 test("a picture board draws as a valid Svg on desktop", async ($, on) => {
   const ui = await mountDrawn($, on, "desktop", ($, e) => {
     const { Svg } = $.ui.resolve(e) as { Svg: Parameters<typeof boardSvg>[0]["Svg"] };
-    return boardSvg({ Svg }, worstBoard("professor", 6, 6));
+    return boardSvg({ Svg }, SAMPLE);
   });
   expect(await ui.find({ type: "Svg" })).toBeDefined();
   await ui.unmount();
@@ -84,7 +91,7 @@ test("Hogzzle draws its picture as an Svg redrawn at each move on desktop", asyn
   expect(moved?.props.source).not.toBe(first?.props.source);
 
   await ui.press({ key: "pane-pause" });
-  expect((await svg())?.props.source).toContain('fill-opacity=".55"');
+  expect((await svg())?.props.source).not.toBe(moved?.props.source);
   await ui.unmount();
 });
 

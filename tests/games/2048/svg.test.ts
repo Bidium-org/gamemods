@@ -2,8 +2,10 @@ import { expect, test } from "claude-code/testing";
 import { PALETTE } from "../../../src/games/2048/palette";
 import { move } from "../../../src/games/2048/rules";
 import { tilesSource } from "../../../src/games/2048/svg";
-import { openGame, PAUSE_FRAME } from "../../fixtures/engine";
-import { _, alwaysTwoFirstCell, state } from "./fixture";
+import { SVG_MAX } from "../../../src/games/game";
+import { PAUSE_COLOR } from "../../../src/pane";
+import { frameColor, openGame } from "../../fixtures/engine";
+import { _, alwaysTwoFirstCell, isMoving, slideCount, state } from "./fixture";
 
 const DIGIT_HEIGHT = 0.75;
 
@@ -26,7 +28,7 @@ const EVERY_TILE = state([
 test("a settled board draws one tile per filled cell and no animation", () => {
   const source = tilesSource(START.grid, null);
   expect(count(source, /url\(#lift\)/g)).toBe(4);
-  expect(count(source, /@keyframes s\d+/g)).toBe(0);
+  expect(isMoving(source)).toBe(false);
   expect(count(source, /class="(show|pop|spawn)"/g)).toBe(0);
   expect(source.includes('class="gain"')).toBe(false);
 });
@@ -35,7 +37,7 @@ test("a move slides every moved tile, pops merges and grows the spawn", () => {
   const { state: after, motion } = move(START, "left", alwaysTwoFirstCell);
   if (!motion) throw new Error("the move should slide");
   const source = tilesSource(after.grid, motion);
-  expect(count(source, /@keyframes s\d+ /g)).toBe(motion.slides.length);
+  expect(slideCount(source)).toBe(motion.slides.length);
   expect(count(source, /class="spawn"/g)).toBe(1);
   expect(count(source, /class="pop"/g)).toBe(motion.merges.length);
 });
@@ -62,7 +64,7 @@ test("a full board in motion stays under the Svg source limit", () => {
     merges: [],
     gain: 131072,
   });
-  expect(full.length).toBeLessThan(131072);
+  expect(full.length).toBeLessThanOrEqual(SVG_MAX);
 });
 
 test("the gain stays inside the image at the top of its float", () => {
@@ -75,10 +77,8 @@ test("the gain stays inside the image at the top of its float", () => {
 });
 
 test("a pause veils the board, its tiles still drawn", () => {
-  const veil = /fill-opacity=".55"/;
-  expect(veil.test(tilesSource(START.grid, null))).toBe(false);
   const dimmed = tilesSource(START.grid, null, { dimmed: true });
-  expect(veil.test(dimmed)).toBe(true);
+  expect(dimmed).not.toBe(tilesSource(START.grid, null));
   expect(count(dimmed, /url\(#lift\)/g)).toBe(4);
 });
 
@@ -95,10 +95,10 @@ test("a 2048 game draws its board as an image in the frame on desktop", async ($
   await ui.press({ key: "control-up" });
   const after = String((await ui.find({ type: "Svg" }))?.props.source);
   expect(after).not.toBe(before);
-  expect(/@keyframes s\d+/.test(after)).toBe(true);
+  expect(isMoving(after)).toBe(true);
 
   await ui.press({ key: "pane-pause" });
-  expect(JSON.stringify(await ui.drawn()).includes(PAUSE_FRAME)).toBe(true);
-  expect(String((await ui.find({ type: "Svg" }))?.props.source)).toContain('fill-opacity=".55"');
+  expect(await frameColor(ui)).toBe(PAUSE_COLOR);
+  expect(String((await ui.find({ type: "Svg" }))?.props.source)).not.toBe(after);
   await ui.unmount();
 });

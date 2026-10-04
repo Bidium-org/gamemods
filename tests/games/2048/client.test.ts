@@ -2,7 +2,8 @@ import type { On } from "claude-code";
 import { type Engine, expect, test } from "claude-code/testing";
 import { fitLayout, GAIN_MS, layoutHeight } from "../../../src/games/2048/client";
 import { mix, PALETTE, vivid } from "../../../src/games/2048/palette";
-import { openGame, PAUSE_FRAME, paneWith, pressAll } from "../../fixtures/engine";
+import { PAUSE_COLOR } from "../../../src/pane";
+import { frameColor, openGame, paneWith, pressAll } from "../../fixtures/engine";
 
 const KEY = "board-2048";
 
@@ -150,7 +151,7 @@ test("a 2048 game draws its board in a Client on terminal, moved by w a s d", as
   expect(await tiles()).toHaveLength(3);
 
   await ui.press({ key: "pane-pause" });
-  expect(JSON.stringify(await ui.drawn()).includes(PAUSE_FRAME)).toBe(true);
+  expect(await frameColor(ui)).toBe(PAUSE_COLOR);
   expect(await ui.find({ type: "Client", key: "board-2048" })).toBeDefined();
   await ui.unmount();
 });

@@ -1,28 +1,10 @@
 import { expect, test } from "claude-code/testing";
-import { type EchoState, echo } from "../../../src/games/echo/echo";
+import { COLORS, type EchoState, echo } from "../../../src/games/echo/echo";
 import { SEED } from "../../fixtures/engine";
+import { ticks, ticksUntilAnswer, toAnswer } from "./fixture";
 
 const LEAD = 8;
 const ANSWER = 300;
-const LIT = "#5fafff";
-const WRONG = "#ff5f5f";
-const TILE = "#2e2e2e";
-const CURSOR = "#5a5a5a";
-
-const ticks = (s: EchoState, n: number) =>
-  Array.from({ length: n }).reduce<EchoState>((acc) => echo.tick?.(acc) ?? acc, s);
-
-const ticksUntilAnswer = (s: EchoState): { s: EchoState; count: number } => {
-  let state = s;
-  let count = 0;
-  while (state.moment.kind !== "answer") {
-    state = echo.tick?.(state) ?? state;
-    count++;
-  }
-  return { s: state, count };
-};
-
-const toAnswer = (s: EchoState) => ticksUntilAnswer(s).s;
 
 // Selects `cell`, the cursor moved there directly
 const selectAt = (s: EchoState, cell: number) => echo.onControl({ ...s, cursor: cell }, "select");
@@ -56,10 +38,10 @@ test("a step is lit 400 ms then dark 200 ms, after the lead-in", () => {
   const s = echo.init(SEED);
   const [first] = s.sequence;
   if (first === undefined) throw new Error("empty sequence");
-  expect(bgAt(ticks(s, LEAD - 1), first)).not.toBe(LIT);
-  expect(bgAt(ticks(s, LEAD), first)).toBe(LIT);
-  expect(bgAt(ticks(s, LEAD + 3), first)).toBe(LIT);
-  expect(bgAt(ticks(s, LEAD + 4), first)).not.toBe(LIT);
+  expect(bgAt(ticks(s, LEAD - 1), first)).not.toBe(COLORS.lit);
+  expect(bgAt(ticks(s, LEAD), first)).toBe(COLORS.lit);
+  expect(bgAt(ticks(s, LEAD + 3), first)).toBe(COLORS.lit);
+  expect(bgAt(ticks(s, LEAD + 4), first)).not.toBe(COLORS.lit);
   expect(ticksUntilAnswer(s).count).toBe(LEAD + 6);
 });
 
@@ -68,8 +50,8 @@ test("input is ignored and the cursor hidden during the playback", () => {
   for (const id of ["select", "right", "down"]) {
     expect(echo.onControl(s, id)).toBe(s);
   }
-  expect(bgAt(s, s.cursor)).toBe(TILE);
-  expect(bgAt(toAnswer(s), s.cursor)).toBe(CURSOR);
+  expect(bgAt(s, s.cursor)).toBe(COLORS.tile);
+  expect(bgAt(toAnswer(s), s.cursor)).toBe(COLORS.cursor);
 });
 
 test("the cursor moves with w a s d, stops at the edges, and e selects under it", () => {
@@ -122,8 +104,8 @@ test("a selected cell lights up briefly", () => {
   const answering = toAnswer(s);
   const [first = 0] = answering.sequence;
   const selected = selectAt(answering, first);
-  expect(bgAt(selected, first)).toBe(LIT);
-  expect(bgAt(ticks(selected, 3), first)).not.toBe(LIT);
+  expect(bgAt(selected, first)).toBe(COLORS.lit);
+  expect(bgAt(ticks(selected, 3), first)).not.toBe(COLORS.lit);
 });
 
 test("a wrong cell ends the game and shows the expected cell in red", () => {
@@ -135,7 +117,7 @@ test("a wrong cell ends the game and shows the expected cell in red", () => {
     score: 2,
     line: "Wrong cell · round 3 · 2×2",
   });
-  expect(bgAt(over, expected)).toBe(WRONG);
+  expect(bgAt(over, expected)).toBe(COLORS.wrong);
   expect(echo.onControl(over, "select")).toBe(over);
   expect(echo.tick?.(over)).toBe(over);
 });
@@ -146,7 +128,7 @@ test("the answer has 30 seconds, then the game ends on the next expected cell", 
   expect(echo.status(ticks(s, ANSWER - 1)).line).toBe("Your turn · 1s · round 1 · 2×2");
   const late = ticks(s, ANSWER);
   expect(echo.status(late)).toMatchObject({ phase: "lost", line: "Time's up · round 1 · 2×2" });
-  expect(bgAt(late, s.sequence[0] ?? 0)).toBe(WRONG);
+  expect(bgAt(late, s.sequence[0] ?? 0)).toBe(COLORS.wrong);
 });
 
 test("a selection does not reset the 30 seconds", () => {
