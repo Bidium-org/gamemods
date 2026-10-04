@@ -126,9 +126,9 @@ export const createTicTacToe = (mistakeRate: number): Game<TicTacToeState, CellB
   }),
   onControl: (s, id) => {
     if (phaseOf(s.cells) !== "playing") return s;
-    return id === "place"
-      ? place(s, mistakeRate)
-      : { ...s, cursor: moveCursor(s.cursor, id, SIDE, SIDE) };
+    if (id === "place") return place(s, mistakeRate);
+    const cursor = moveCursor(s.cursor, id, SIDE, SIDE);
+    return cursor === s.cursor ? s : { ...s, cursor };
   },
   board: (s) => ({
     cell: { width: 5, height: 3 },
