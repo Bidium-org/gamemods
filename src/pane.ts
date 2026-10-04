@@ -50,6 +50,9 @@ export const pauseLabel = (isPaused: boolean): string => (isPaused ? "Resume" : 
 
 export const scoreLine = (score: number, best: number): string => `score ${score} · best ${best}`;
 
+// The session's keys on the game screen: no game control may take one
+export const SESSION_HOTKEYS = { pause: "p", restart: "r", back: "q" };
+
 // Svg draws only off the terminal; Client loads only on it, although Desktop's table lists one
 const boardElements = (
   { Box, Text, Svg, Client }: PaneElements,
@@ -62,7 +65,13 @@ const boardElements = (
 });
 
 const backButton = (Button: MenuElements["Button"], onBack: () => void): RenderElement =>
-  Button({ key: "pane-back", label: "Menu", hotkey: "q", plain: true, onPress: onBack });
+  Button({
+    key: "pane-back",
+    label: "Menu",
+    hotkey: SESSION_HOTKEYS.back,
+    plain: true,
+    onPress: onBack,
+  });
 
 function gameScreen(
   els: MenuElements,
@@ -123,14 +132,14 @@ function gameScreen(
           Button({
             key: "pane-pause",
             label: pauseLabel(session.pause !== null),
-            hotkey: "p",
+            hotkey: SESSION_HOTKEYS.pause,
             plain: true,
             onPress: actions.onPause,
           }),
           Button({
             key: "pane-restart",
             label: "Restart",
-            hotkey: "r",
+            hotkey: SESSION_HOTKEYS.restart,
             plain: true,
             onPress: actions.onRestart,
           }),
