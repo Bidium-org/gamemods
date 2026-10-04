@@ -1,5 +1,5 @@
 import type { RenderElement } from "claude-code";
-import { CATALOG, type GameId } from "./games/catalog";
+import { GAMES, type GameId } from "./games/index";
 import { type MenuElements, menu } from "./menu";
 import { pausedGameId, type Session } from "./session";
 
@@ -28,7 +28,8 @@ export function band(
   actions: BandActions,
 ): RenderElement {
   const { Box, Text, Button } = els;
-  const paused = CATALOG.find((g) => g.id === pausedGameId(session));
+  const pausedId = pausedGameId(session);
+  const paused = pausedId && GAMES[pausedId];
   return Box({
     flexDirection: "column",
     children: [

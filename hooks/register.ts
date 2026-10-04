@@ -1,7 +1,7 @@
 import type { EngineInterface, Register, Timer } from "claude-code";
 import { band, WIDEN } from "../src/band";
 import { parseArgs } from "../src/command";
-import { CATALOG, type GameId } from "../src/games/catalog";
+import { GAME_IDS, type GameId } from "../src/games/index";
 import { pane } from "../src/pane";
 import {
   chooseGame,
@@ -89,7 +89,7 @@ const asScore = (stored: unknown): number => (typeof stored === "number" ? store
 
 async function loadBest($: EngineInterface): Promise<Session["best"]> {
   const best: Session["best"] = {};
-  for (const { id } of CATALOG) {
+  for (const id of GAME_IDS) {
     best[id] = asScore(await $.store.get(bestKey(id)));
   }
   return best;

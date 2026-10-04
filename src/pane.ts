@@ -1,9 +1,9 @@
 import type { RenderElement, RenderSurface } from "claude-code";
 import { claudeState } from "./band";
-import { CATALOG, type CatalogEntry, type GameId } from "./games/catalog";
-import type { BoardElements, Game } from "./games/game";
+import type { BoardElements } from "./games/game";
+import { GAMES, type GameId } from "./games/index";
 import { type MenuElements, menu } from "./menu";
-import { currentGame, type PauseReason, type Session } from "./session";
+import type { PauseReason, Session } from "./session";
 
 export const WIDEN_PANE = "Widen the window to play";
 export const NOT_ON_SURFACE = "This game is not playable here yet. Play it in Claude Code Desktop.";
@@ -55,12 +55,12 @@ const boardElements = (
 function gameScreen(
   els: MenuElements,
   session: Session,
-  entry: CatalogEntry,
-  game: Game<unknown, unknown>,
+  id: GameId,
   drawn: RenderElement,
   actions: PaneActions,
 ): RenderElement[] {
   const { Box, Text, Button } = els;
+  const { name, game } = GAMES[id];
   const status = game.status(session.state);
   const header = Box({
     flexDirection: "column",
@@ -69,10 +69,10 @@ function gameScreen(
         flexDirection: "row",
         columnGap: 2,
         children: [
-          Text({ bold: true, children: [entry.name] }),
+          Text({ bold: true, children: [name] }),
           Text({
             dimColor: true,
-            children: [`score ${status.score} · best ${session.best[entry.id] ?? 0}`],
+            children: [`score ${status.score} · best ${session.best[id] ?? 0}`],
           }),
         ],
       }),
@@ -150,8 +150,7 @@ export function pane(
   actions: PaneActions,
 ): RenderElement {
   const { Box, Text, Button } = els;
-  const entry = session.screen === "game" && CATALOG.find((g) => g.id === session.gameId);
-  const game = currentGame(session);
+  const id = session.screen === "game" ? session.gameId : null;
   const hint = (text: string) =>
     view.isFocused ? null : Text({ dimColor: true, children: [text] });
   // Fills the pane: on Desktop a click below the tree loses the keys, so hotkeys would go to the prompt
@@ -163,10 +162,11 @@ export function pane(
       children,
     });
 
-  if (!entry || !game) {
+  if (!id) {
     return root([hint("Click here to use the keyboard"), menu(els, session, actions.onChoose)]);
   }
-  const title = Text({ bold: true, children: [entry.name] });
+  const { name, game } = GAMES[id];
+  const title = Text({ bold: true, children: [name] });
   const back = Button({
     key: "pane-back",
     label: "Menu",
@@ -194,8 +194,5 @@ export function pane(
   if (view.bodyColumns < game.size.columns || view.bodyRows < game.size.rows) {
     return root([title, Text({ children: [WIDEN_PANE] }), back]);
   }
-  return root([
-    hint("Click the game to play"),
-    ...gameScreen(els, session, entry, game, drawn, actions),
-  ]);
+  return root([hint("Click the game to play"), ...gameScreen(els, session, id, drawn, actions)]);
 }

@@ -1,7 +1,6 @@
 import type { JsonValue } from "claude-code";
-import type { GameId } from "./games/catalog";
 import type { Game } from "./games/game";
-import { GAMES } from "./games/index";
+import { GAMES, type GameId } from "./games/index";
 
 export type Screen = "closed" | "menu" | "game";
 
@@ -41,7 +40,7 @@ export const initialSession: Session = {
 };
 
 export const currentGame = (s: Session): Game<unknown, unknown> | undefined =>
-  s.gameId ? GAMES[s.gameId] : undefined;
+  s.gameId ? GAMES[s.gameId].game : undefined;
 
 export const pausedGameId = (s: Session): GameId | null =>
   s.state !== null && s.pause ? s.gameId : null;
@@ -72,7 +71,7 @@ export const chooseGame = (s: Session, id: GameId, seed: number): Session => {
   return {
     ...shown,
     gameId: id,
-    state: GAMES[id].init(seed),
+    state: GAMES[id].game.init(seed),
     motion: null,
     pause: null,
   };
