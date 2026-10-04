@@ -1,6 +1,6 @@
 # Architecture
 
-A Claude Code mod: a game menu in the band above the prompt, the game in a pane. One hooks module answers every key itself, so it makes zero model calls and adds nothing to the transcript. Desktop (Code tab) and terminal run the same code; each board is drawn by the renderer its kind and the surface call for.
+A Claude Code mod: a game menu in the band above the prompt, the game in a pane. One hooks module answers every key itself, so it makes zero model calls and adds nothing to the transcript. Desktop (Code tab) and terminal run the same code; each game draws its own board with the elements its surface offers.
 
 ## Layout
 
@@ -8,7 +8,7 @@ A Claude Code mod: a game menu in the band above the prompt, the game in a pane.
 .claude-plugin/   → plugin and marketplace manifests (the repo is both); types/ is generated, ignored
 hooks/            → the single entry point: wires engine hooks to the session
 src/              → session state and transitions, band, pane and menu views, /gamemods parsing
-src/games/        → contract, catalog, registry and helpers shared by games (`drawCells` for cell boards); one folder per game, with its README
+src/games/        → contract, registry and helpers shared by games (`drawCells` for cell boards); one folder per game, with its README
 tests/            → kit tests run by `claude plugin test`; shared engine stub in tests/engine.ts
 docs/             → this file, ADD_A_GAME.md
 ```
@@ -20,7 +20,7 @@ Games are pure (state in, state out, no `$`). How to add one: `docs/ADD_A_GAME.m
 **Session start.**
 
 1. `session.start` in `hooks/register.ts` registers `/gamemods` with `immediate: true`.
-2. `loadBest()` reads `best:<id>` from `$.store` for every game of `src/games/catalog.ts`.
+2. `loadBest()` reads `best:<id>` from `$.store` for every game of `GAMES` in `src/games/index.ts`.
 
 **Open from the band.**
 

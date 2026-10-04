@@ -4,10 +4,9 @@ A game is a pure object: state in, state out, no `$`. Everything it touches live
 
 ## Steps
 
-1. **Catalog.** In `src/games/catalog.ts`, add the id to `GameId` and an entry to `CATALOG`.
-2. **Game.** Create `src/games/<id>/` and write `src/games/<id>/<id>.ts` exporting a `Game<S>` (contract in `src/games/game.ts`). Everything the game owns lives in that folder. `src/games/morpion/morpion.ts` is the reference; `src/games/echo/echo.ts` for a game with a clock.
-3. **README.** Write `src/games/<id>/README.md`: what the game is, its keys, its score, and its manual checks. `src/games/morpion/README.md` is the reference. Add a row to the games table of the root `README.md`, linking to it.
-4. **Registry.** Add it to `GAMES` in `src/games/index.ts`. `GAMES` holds every `GameId`: until it does, `pnpm typecheck` fails.
+1. **Game.** Create `src/games/<id>/` and write `src/games/<id>/<id>.ts` exporting a `Game<S>` (contract in `src/games/game.ts`). Everything the game owns lives in that folder. `src/games/morpion/morpion.ts` is the reference; `src/games/echo/echo.ts` for a game with a clock.
+2. **README.** Write `src/games/<id>/README.md`: what the game is, its keys, its score, and its manual checks. `src/games/morpion/README.md` is the reference. Add a row to the games table of the root `README.md`, linking to it.
+3. **Registry.** In `src/games/index.ts`, add one entry to `ENTRIES`: `<id>: { name, tagline, game }`. The key is the game's id: typed after `/gamemods` and stored with its best score, so it never changes. The menu lists games in key order, where JS puts an integer-like id (`2048`) first. A duplicate id or a missing field fails `pnpm typecheck`.
 
 The session already handles the menu, `p` pause, `r` restart, `q` back to the menu, automatic pauses and the best score.
 
