@@ -6,10 +6,12 @@ import type { GameId } from "../../src/games/index";
 export const SURFACES = ["desktop", "terminal"] as const;
 export type Surface = (typeof SURFACES)[number];
 
-// The game seed, and the instant the mock clock starts at
+// The game seed, and the instant the mock clock starts at.
 export const SEED = 1;
 
 const CWD = "/work";
+
+export const PANE_OPENED = { id: "gamemods", title: "Gamemods", focus: true };
 
 export type EngineLog = {
   registered: unknown[];
@@ -26,18 +28,31 @@ type StubOptions = { isPlaced?: boolean; stored?: Record<string, unknown> };
 
 // The engine side of every call the mod makes: what it registers, opens, closes, toasts and stores.
 // `isPlaced: false` plays a surface that leaves the pane undrawn.
-export function stubEngine(on: On, { isPlaced = true, stored = {} }: StubOptions = {}): EngineLog {
+function stubEngine(on: On, { isPlaced = true, stored = {} }: StubOptions = {}): EngineLog {
   const clock = mock.clock(on, { now: SEED });
-  const log: EngineLog = { registered: [], opened: [], closed: [], toasts: [], stored, clock };
+  const log: EngineLog = {
+    registered: [],
+    opened: [],
+    closed: [],
+    toasts: [],
+    stored,
+    clock,
+  };
   on("session.start", () => ({ cwd: CWD }));
-  on("ui.render", () => ({ type: "Text", props: {}, children: ["engine band"] }));
+  on("ui.render", () => ({
+    type: "Text",
+    props: {},
+    children: ["engine band"],
+  }));
   on("command.register", (_$, e) => {
     log.registered.push(e);
     return { value: { command: e.name } };
   });
   on("ui.open", (_$, e) => {
     log.opened.push(e);
-    return { value: isPlaced ? { isPlaced: true } : { isPlaced: false, reason: "too narrow" } };
+    return {
+      value: isPlaced ? { isPlaced: true } : { isPlaced: false, reason: "too narrow" },
+    };
   });
   on("ui.close", (_$, e) => {
     log.closed.push(e.id);
@@ -45,7 +60,15 @@ export function stubEngine(on: On, { isPlaced = true, stored = {} }: StubOptions
   });
   on("ui.panes", () => ({
     value: log.opened.length
-      ? [{ id: "gamemods", title: "Gamemods", isShown: true, isFocused: false, isPlaced }]
+      ? [
+          {
+            id: PANE_OPENED.id,
+            title: PANE_OPENED.title,
+            isShown: true,
+            isFocused: false,
+            isPlaced,
+          },
+        ]
       : [],
   }));
   on("ui.toast", (_$, e) => {
@@ -62,9 +85,6 @@ export function stubEngine(on: On, { isPlaced = true, stored = {} }: StubOptions
   });
   return log;
 }
-
-// What the engine records when the mod opens its pane
-export const PANE_OPENED = { id: "gamemods", title: "Gamemods", focus: true };
 
 export const BAND = {
   plugin: "gamemods",
@@ -125,7 +145,12 @@ export const paneWith = ({
   placement?: "dock" | "inline";
 } = {}) => ({
   ...PANE,
-  props: { ...PANE.props, isFocused, placement, scroll: { offset: 0, bodyRows } },
+  props: {
+    ...PANE.props,
+    isFocused,
+    placement,
+    scroll: { offset: 0, bodyRows },
+  },
 });
 
 // A session with `id` open from the band, its pane mounted: what most tests start from
