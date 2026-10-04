@@ -93,9 +93,9 @@ test("a grid with no move left is lost and ignores the keys", () => {
   }
 });
 
-test("the board is the grid and the score, drawn as tiles", () => {
+test("the board is the grid and the score", () => {
   const s = game.init(SEED);
-  expect(game.board(s)).toEqual({ kind: "tiles", grid: s.grid, score: 0 });
+  expect(game.board(s)).toEqual({ grid: s.grid, score: 0 });
 });
 
 test("a move animates; a key that moves nothing does not", () => {
