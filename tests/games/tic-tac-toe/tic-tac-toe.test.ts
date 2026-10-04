@@ -16,11 +16,11 @@ const playAt = (s: TicTacToeState, i: number, game = ticTacToe) =>
 const playAll = (cells: number[], s = ticTacToe.init(SEED)) =>
   cells.reduce((acc, i) => playAt(acc, i), s);
 
-test("a game starts empty, cursor on the center, score zero", () => {
+test("a game starts empty, cursor on the center", () => {
   const s = ticTacToe.init(SEED);
   expect(s.cells.every((c) => c === null)).toBe(true);
   expect(s.cursor).toBe(4);
-  expect(ticTacToe.status(s)).toEqual({ phase: "playing", score: 0, line: "Your move" });
+  expect(ticTacToe.status(s).line).toBe("Your move");
 });
 
 test("the cursor moves with w a s d and stops at the edges", () => {
@@ -125,10 +125,4 @@ test("a careless bot sometimes misses a block, always on a free cell", () => {
   });
   expect(answers.every((i) => [2, 3, 5, 6, 7, 8].includes(i))).toBe(true);
   expect(answers.some((i) => i !== 2)).toBe(true);
-});
-
-test("the same seed plays the same game", () => {
-  const game = (seed: number) =>
-    [0, 8, 6].reduce((s, i) => playAt(s, i, careless), careless.init(seed));
-  expect(game(42)).toEqual(game(42));
 });

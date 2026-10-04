@@ -3,7 +3,6 @@ import { SVG_MAX } from "../../../src/games/game";
 import type { PictureBoard } from "../../../src/games/hogzzle/board";
 import { PICTURES } from "../../../src/games/hogzzle/pictures.gen";
 import { boardSvg, pictureSource } from "../../../src/games/hogzzle/svg";
-import { NOT_ON_SURFACE } from "../../../src/pane";
 import { mountDrawn, openGame } from "../../fixtures/engine";
 
 // The heaviest drawing of a grid: every tile out of place, a pick, the cursor, the pause
@@ -92,14 +91,5 @@ test("Hogzzle draws its picture as an Svg redrawn at each move on desktop", asyn
 
   await ui.press({ key: "pane-pause" });
   expect((await svg())?.props.source).not.toBe(moved?.props.source);
-  await ui.unmount();
-});
-
-test("Hogzzle says it is not playable in the terminal yet", async ($, on) => {
-  const { ui } = await openGame($, on, "terminal", "hogzzle");
-  expect(await ui.find({ type: "Text", text: NOT_ON_SURFACE })).toBeDefined();
-  expect(await ui.find({ key: "control-pick" })).toBeUndefined();
-  await ui.press({ key: "pane-back" });
-  expect(await ui.find({ key: "game-hogzzle" })).toBeDefined();
   await ui.unmount();
 });

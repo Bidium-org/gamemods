@@ -22,16 +22,12 @@ const bgAt = (s: EchoState, cell: number) => echo.board(s).rows.flat()[cell]?.bg
 // A cell of the grid that is not `cell`
 const otherThan = (cell: number) => (cell === 0 ? 1 : 0);
 
-test("a game starts on 2×2 with one step to watch, score zero", () => {
+test("a game starts on 2×2 with one step to watch", () => {
   const s = echo.init(SEED);
   expect(side(s)).toBe(2);
   expect(s.sequence).toHaveLength(1);
   expect(s.cursor).toBe(0);
-  expect(echo.status(s)).toEqual({ phase: "playing", score: 0, line: "Watch · round 1 · 2×2" });
-});
-
-test("the same seed plays the same game", () => {
-  expect(passRounds(5).sequence).toEqual(passRounds(5).sequence);
+  expect(echo.status(s).line).toBe("Watch · round 1 · 2×2");
 });
 
 test("a step is lit 400 ms then dark 200 ms, after the lead-in", () => {

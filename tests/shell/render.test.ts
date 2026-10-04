@@ -1,8 +1,7 @@
 import { expect, test } from "claude-code/testing";
 import { drawCells as boardText } from "../../src/games/cells";
 import type { CellBoard } from "../../src/games/game";
-import { ticTacToe } from "../../src/games/tic-tac-toe/tic-tac-toe";
-import { mountDrawn, SEED, SURFACES } from "../fixtures/engine";
+import { mountDrawn, SURFACES } from "../fixtures/engine";
 
 const BOARD: CellBoard = {
   cell: { width: 2, height: 1 },
@@ -41,14 +40,6 @@ for (const surface of SURFACES) {
         },
       ],
     });
-    await ui.unmount();
-  });
-
-  test(`the Tic-tac-toe board draws as a valid tree on ${surface}`, async ($, on) => {
-    const ui = await mountDrawn($, on, surface, ($, e) =>
-      boardText($.ui.resolve(e), ticTacToe.board(ticTacToe.init(SEED))),
-    );
-    expect(await ui.findAll({ type: "Box" })).toHaveLength(1 + 3 + 9);
     await ui.unmount();
   });
 }

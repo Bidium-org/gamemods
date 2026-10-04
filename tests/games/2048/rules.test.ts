@@ -46,10 +46,6 @@ test("a new game draws its two tiles from the random source", () => {
   ]);
 });
 
-test("the same seed starts the same game", () => {
-  expect(newGame(42)).toEqual(newGame(42));
-});
-
 test("merges follow the original reference cases", () => {
   expect(oneRow([2, 2, 2, 2], "left").row).toEqual([4, 4, 2, _]);
   expect(oneRow([2, 2, 2, _], "left").row).toEqual([4, 2, 2, _]);

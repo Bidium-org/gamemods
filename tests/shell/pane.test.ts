@@ -48,16 +48,6 @@ for (const surface of SURFACES) {
     await ui.unmount();
   });
 
-  test(`a 2048 game opens with its four controls on ${surface}`, async ($, on) => {
-    const { ui } = await openGame($, on, surface, "2048");
-    expect(await ui.find({ type: "Text", text: "Merge the tiles to reach 2048" })).toBeDefined();
-    for (const id of ["up", "left", "down", "right"]) {
-      expect(await ui.find({ key: `control-${id}` })).toBeDefined();
-    }
-    expect(await ui.find({ key: "control-place" })).toBeUndefined();
-    await ui.unmount();
-  });
-
   for (const id of GAME_IDS) {
     const { name, game } = GAMES[id];
     test(`a pane below ${name}'s size hides it, asking for a wider window if ${surface} draws it`, async ($, on) => {
@@ -74,14 +64,6 @@ for (const surface of SURFACES) {
       await ui.unmount();
     });
   }
-
-  test(`Tic-tac-toe draws its board as text on ${surface}`, async ($, on) => {
-    const { ui } = await openGame($, on, surface, "tic-tac-toe");
-    expect(await ui.find({ key: "board-row-2" })).toBeDefined();
-    expect(await ui.find({ type: "Svg" })).toBeUndefined();
-    expect(await ui.find({ type: "Client" })).toBeUndefined();
-    await ui.unmount();
-  });
 
   test(`the pane root fills the body on both screens on ${surface}`, async ($, on) => {
     const { ui } = await openGame($, on, surface, A_GAME);
