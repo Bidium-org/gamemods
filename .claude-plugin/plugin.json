@@ -1,6 +1,6 @@
 {
   "name": "gamemods",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Games for Claude Code: play while Claude works. A menu above the prompt, each game in a side pane. Zero model calls.",
   "author": { "name": "Birium", "email": "bidiumdev@gmail.com" },
   "homepage": "https://github.com/Birium/gamemods",
