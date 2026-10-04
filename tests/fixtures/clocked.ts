@@ -1,6 +1,6 @@
 import { echo } from "../../src/games/echo/echo";
-import type { GameId } from "../../src/games/index";
-import { chooseGame, clockMs, initialSession, type Session, tick } from "../../src/session";
+import { GAMES, type GameId } from "../../src/games/index";
+import { chooseGame, initialSession, type Session, tick } from "../../src/session";
 import { ticksUntilAnswer, toAnswer } from "../games/echo/fixture";
 import { SEED } from "./engine";
 import { movesTo } from "./grid";
@@ -25,15 +25,15 @@ export const ANSWER_CONTROLS = [...movesTo(ANSWERING.cursor, FIRST_STEP, SIDE), 
 // The clocked game, just chosen
 export const clocked = (): Session => chooseGame(initialSession, CLOCKED, SEED);
 
-// The clocked game after `ms` of clock
-export const clockedAfter = (ms: number): Session =>
-  Array.from({ length: ms / PERIOD }).reduce<Session>((s) => tick(s), clocked());
+// `s` after `ms` of clock
+export const runClock = (s: Session, ms: number): Session =>
+  Array.from({ length: ms / PERIOD }).reduce<Session>((acc) => tick(acc), s);
 
-// The clock time a game left unanswered runs until it ends, its clock stopped
+// The clock time a game left unanswered takes to end
 export const END_MS = (() => {
   let s = clocked();
   let ms = 0;
-  while (clockMs(s) !== null) {
+  while (GAMES[CLOCKED].game.status(s.state).phase === "playing") {
     s = tick(s);
     ms += PERIOD;
   }

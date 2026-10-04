@@ -1,6 +1,5 @@
 import { expect, test } from "claude-code/testing";
-import { ANIMATION_MS } from "../../src/games/2048/svg";
-import type { MorpionState } from "../../src/games/morpion/morpion";
+import { GAME_IDS, GAMES, type GameId } from "../../src/games/index";
 import {
   chooseGame,
   closePane,
@@ -12,24 +11,27 @@ import {
   openMenu,
   pause,
   restart,
-  type Session,
   settle,
   toggleBand,
   togglePause,
 } from "../../src/session";
+import {
+  ANIMATED,
+  animated,
+  FIRST_MOVE,
+  MOTION_MS,
+  NO_MOVE,
+  SECOND_MOVE,
+} from "../fixtures/animated";
 import { SEED } from "../fixtures/engine";
+import { DRAW_CONTROLS, MOVE, TURN_BASED, turnBased, WIN_SCORE, won } from "../fixtures/turn-based";
 
-const morpion = () => chooseGame(initialSession, "morpion", SEED);
+const { game } = GAMES[TURN_BASED];
 
-// The person places X on cell `i` of the running Morpion
-const placeAt = (s: Session, i: number) =>
-  control({ ...s, state: { ...(s.state as MorpionState), cursor: i } }, "place");
+// Any game but `id`
+const otherThan = (id: GameId) => GAME_IDS.find((other) => other !== id) as GameId;
 
-const winOnce = (s: Session) => [0, 8, 6, 3].reduce(placeAt, s);
-
-const morpionState = (s: Session) => s.state as MorpionState;
-
-const moved2048 = () => control(chooseGame(initialSession, "2048", SEED), "up");
+const moved = () => control(animated(), FIRST_MOVE);
 
 test("the band folds and unfolds", () => {
   const open = toggleBand(initialSession);
@@ -38,52 +40,51 @@ test("the band folds and unfolds", () => {
 });
 
 test("choosing a game folds the band and starts it unpaused", () => {
-  const s = chooseGame(toggleBand(initialSession), "morpion", SEED);
-  expect(s).toMatchObject({ screen: "game", bandExpanded: false, gameId: "morpion", pause: null });
-  expect(morpionState(s).cursor).toBe(4);
+  const s = chooseGame(toggleBand(initialSession), TURN_BASED, SEED);
+  expect(s).toMatchObject({ screen: "game", bandExpanded: false, gameId: TURN_BASED, pause: null });
+  expect(s.state).toEqual(game.init(SEED));
 });
 
 test("opening the menu pauses the game and keeps it", () => {
-  const s = openMenu(placeAt(morpion(), 0));
-  expect(s).toMatchObject({ screen: "menu", gameId: "morpion", pause: "menu" });
+  const s = openMenu(control(turnBased(), MOVE));
+  expect(s).toMatchObject({ screen: "menu", gameId: TURN_BASED, pause: "menu" });
 });
 
 test("choosing the same game brings it back as it was left, paused", () => {
-  const left = openMenu(placeAt(morpion(), 0));
-  const back = chooseGame(left, "morpion", SEED);
+  const left = openMenu(control(turnBased(), MOVE));
+  const back = chooseGame(left, TURN_BASED, SEED);
   expect(back).toEqual({ ...left, screen: "game" });
 });
 
-test("choosing another game abandons the running one and its streak", () => {
-  const won = winOnce(morpion());
-  const other = chooseGame(openMenu(won), "hogzzle", SEED);
-  const again = chooseGame(other, "morpion", SEED);
-  expect(morpionState(again).streak).toBe(0);
+test("choosing another game abandons the running one", () => {
+  const other = chooseGame(openMenu(won()), otherThan(TURN_BASED), SEED);
+  const again = chooseGame(other, TURN_BASED, SEED);
+  expect(again.state).toEqual(game.init(SEED));
 });
 
 test("closing the pane pauses the game and keeps it in memory", () => {
-  const s = closePane(placeAt(morpion(), 0));
-  expect(s).toMatchObject({ screen: "closed", gameId: "morpion", pause: "menu" });
+  const s = closePane(control(turnBased(), MOVE));
+  expect(s).toMatchObject({ screen: "closed", gameId: TURN_BASED, pause: "menu" });
 });
 
 // Else the next opening, never focused on Desktop, would read as a focus loss
 test("closing the pane forgets its focus", () => {
-  const s = closePane(observeFocus(morpion(), true));
+  const s = closePane(observeFocus(turnBased(), true));
   expect(s.hasFocus).toBe(false);
 });
 
 test("a key the game ignores leaves the session as it was", () => {
-  const won = winOnce(morpion());
-  expect(control(won, "up")).toBe(won);
+  const s = won();
+  expect(control(s, MOVE)).toBe(s);
 });
 
 test("hiding the band keeps the screen and the game", () => {
-  const playing = morpion();
+  const playing = turnBased();
   expect(hideBand(playing)).toEqual({ ...playing, bandHidden: true });
 });
 
 test("the first pause reason wins", () => {
-  const s = pause(pause(morpion(), "permission"), "focus");
+  const s = pause(pause(turnBased(), "permission"), "focus");
   expect(s.pause).toBe("permission");
 });
 
@@ -92,39 +93,39 @@ test("nothing pauses without a game", () => {
 });
 
 test("p pauses, and only p resumes", () => {
-  const paused = togglePause(morpion());
+  const paused = togglePause(turnBased());
   expect(paused.pause).toBe("manual");
-  expect(togglePause(pause(morpion(), "turn-end")).pause).toBeNull();
+  expect(togglePause(pause(turnBased(), "turn-end")).pause).toBeNull();
   expect(togglePause(paused).pause).toBeNull();
 });
 
 test("a paused game ignores its keys", () => {
-  const paused = pause(morpion(), "permission");
-  expect(control(paused, "up")).toBe(paused);
-  expect(placeAt(paused, 0).state).toEqual({ ...morpionState(paused), cursor: 0 });
+  const paused = pause(turnBased(), "permission");
+  expect(control(paused, MOVE)).toBe(paused);
 });
 
 test("a running game takes its keys", () => {
-  expect(morpionState(control(morpion(), "up")).cursor).toBe(1);
+  const s = turnBased();
+  expect(control(s, MOVE).state).toEqual(game.onControl(s.state, MOVE));
 });
 
-test("the best score follows the streak up and never down", () => {
-  const won = winOnce(morpion());
-  expect(won.best).toEqual({ morpion: 1 });
-  const lost = [4, 2, 3, 1, 8].reduce(placeAt, restart(won, SEED));
-  expect(morpionState(lost).streak).toBe(0);
-  expect(lost.best).toEqual({ morpion: 1 });
+test("the best score follows the score up and never down", () => {
+  const s = won();
+  expect(s.best).toEqual({ [TURN_BASED]: WIN_SCORE });
+  const after = DRAW_CONTROLS.reduce(control, restart(s, SEED));
+  expect(game.status(after.state).score).toBeLessThan(WIN_SCORE);
+  expect(after.best).toEqual({ [TURN_BASED]: WIN_SCORE });
 });
 
-test("a restart resumes the game and lets it keep a won streak", () => {
-  const won = pause(winOnce(morpion()), "turn-end");
-  const again = restart(won, SEED);
+test("a restart resumes the game through the game's own restart", () => {
+  const s = pause(won(), "turn-end");
+  const again = restart(s, SEED);
   expect(again.pause).toBeNull();
-  expect(morpionState(again)).toMatchObject({ streak: 1, cursor: 4 });
+  expect(again.state).toEqual(game.restart?.(s.state, SEED));
 });
 
 test("losing the focus pauses; getting it back does not resume", () => {
-  const focused = observeFocus(morpion(), true);
+  const focused = observeFocus(turnBased(), true);
   expect(focused).toMatchObject({ hasFocus: true, pause: null });
   const lost = observeFocus(focused, false);
   expect(lost).toMatchObject({ hasFocus: false, pause: "focus" });
@@ -132,56 +133,55 @@ test("losing the focus pauses; getting it back does not resume", () => {
 });
 
 test("a game opened without the focus is not paused", () => {
-  const s = morpion();
+  const s = turnBased();
   expect(observeFocus(s, false)).toBe(s);
 });
 
-test("a 2048 move keeps its motion; a Morpion move has none", () => {
-  expect(moved2048().motion).toMatchObject({ slides: expect.any(Array) });
-  expect(control(morpion(), "up").motion).toBeNull();
+test("an animated move keeps its motion; a move without animation has none", () => {
+  expect(moved().motion).not.toBeNull();
+  expect(control(turnBased(), MOVE).motion).toBeNull();
 });
 
 test("only a move that changes the state counts as a new move", () => {
-  const moved = moved2048();
-  expect(moved.moveId).toBe(1);
-  expect(control(moved, "place")).toBe(moved);
-  const again = control(moved, "left");
+  const s = moved();
+  expect(s.moveId).toBe(1);
+  expect(control(s, NO_MOVE)).toBe(s);
+  const again = control(s, SECOND_MOVE);
   expect(again.moveId).toBe(2);
-  expect(control(again, "left")).toBe(again);
-  expect(control(togglePause(again), "down").moveId).toBe(2);
-  expect(control(morpion(), "up").moveId).toBe(1);
+  expect(control(togglePause(again), FIRST_MOVE).moveId).toBe(2);
+  expect(control(turnBased(), MOVE).moveId).toBe(1);
 });
 
 test("settling, restart and the menu leave the move count as it was", () => {
-  const moved = moved2048();
-  expect(settle(moved).moveId).toBe(1);
-  expect(restart(moved, SEED).moveId).toBe(1);
-  expect(chooseGame(openMenu(moved), "2048", SEED).moveId).toBe(1);
+  const s = moved();
+  expect(settle(s).moveId).toBe(1);
+  expect(restart(s, SEED).moveId).toBe(1);
+  expect(chooseGame(openMenu(s), ANIMATED, SEED).moveId).toBe(1);
 });
 
 test("settling clears the motion only, and twice changes nothing", () => {
-  const moved = moved2048();
-  const settled = settle(moved);
-  expect(settled).toEqual({ ...moved, motion: null });
+  const s = moved();
+  const settled = settle(s);
+  expect(settled).toEqual({ ...s, motion: null });
   expect(settle(settled)).toBe(settled);
 });
 
 test("a pause keeps the motion", () => {
-  const moved = moved2048();
-  expect(togglePause(moved).motion).toBe(moved.motion);
-  expect(pause(moved, "focus").motion).toBe(moved.motion);
+  const s = moved();
+  expect(togglePause(s).motion).toBe(s.motion);
+  expect(pause(s, "focus").motion).toBe(s.motion);
 });
 
 test("restart, menu, closing and switching game clear the motion", () => {
-  const moved = moved2048();
-  expect(restart(moved, SEED).motion).toBeNull();
-  expect(openMenu(moved).motion).toBeNull();
-  expect(closePane(moved).motion).toBeNull();
-  expect(chooseGame(moved, "morpion", SEED).motion).toBeNull();
+  const s = moved();
+  expect(restart(s, SEED).motion).toBeNull();
+  expect(openMenu(s).motion).toBeNull();
+  expect(closePane(s).motion).toBeNull();
+  expect(chooseGame(s, otherThan(ANIMATED), SEED).motion).toBeNull();
 });
 
 test("the motion is drawn for the game's animation time, a game without one never", () => {
-  expect(motionMs(moved2048())).toBe(ANIMATION_MS);
-  expect(motionMs(settle(moved2048()))).toBeNull();
-  expect(motionMs({ ...morpion(), motion: {} })).toBeNull();
+  expect(motionMs(moved())).toBe(MOTION_MS);
+  expect(motionMs(settle(moved()))).toBeNull();
+  expect(motionMs({ ...turnBased(), motion: {} })).toBeNull();
 });

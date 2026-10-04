@@ -1,8 +1,10 @@
 import { expect, test } from "claude-code/testing";
-import { type EchoState, echo } from "../../src/games/echo/echo";
+import { GAME_IDS, GAMES, type GameId } from "../../src/games/index";
+import { pauseLine, scoreLine } from "../../src/pane";
 import {
   chooseGame,
   clockMs,
+  control,
   gameView,
   initialSession,
   openMenu,
@@ -11,98 +13,106 @@ import {
   tick,
   togglePause,
 } from "../../src/session";
-import { openGame, SEED, SURFACES } from "../fixtures/engine";
+import {
+  ANSWER_CONTROLS,
+  CLOCKED,
+  clocked,
+  END_MS,
+  PERIOD,
+  PLAYBACK_MS,
+  runClock,
+} from "../fixtures/clocked";
+import { openGame, pressControls, SEED, SURFACES } from "../fixtures/engine";
 
-const echoGame = () => chooseGame(initialSession, "echo", SEED);
+const { game } = GAMES[CLOCKED];
 
-const echoState = (s: Session) => s.state as EchoState;
+// The line the clocked game shows in `s`
+const lineOf = (s: Session) => game.status(s.state).line;
 
-// The playback of round 1: the lead-in, then one step of 600 ms
-const PLAYBACK_MS = 1400;
-
-const FIRST_CELL = echo.init(SEED).sequence[0] ?? 0;
-
-test("the clock runs only for a game with a period, on its screen, unpaused", () => {
-  expect(clockMs(echoGame())).toBe(100);
-  expect(clockMs(chooseGame(initialSession, "morpion", SEED))).toBeNull();
-  expect(clockMs(openMenu(echoGame()))).toBeNull();
-  expect(clockMs(pause(echoGame(), "focus"))).toBeNull();
+test("the clock runs only for a game with a period, on its screen, unpaused, not over", () => {
+  const unclocked = GAME_IDS.find((id) => !GAMES[id].game.tickMs) as GameId;
+  expect(clockMs(clocked())).toBe(PERIOD);
+  expect(clockMs(chooseGame(initialSession, unclocked, SEED))).toBeNull();
+  expect(clockMs(openMenu(clocked()))).toBeNull();
+  expect(clockMs(pause(clocked(), "focus"))).toBeNull();
   expect(clockMs(initialSession)).toBeNull();
-  const ended: EchoState = {
-    ...echo.init(SEED),
-    moment: { kind: "over", reason: "wrong", expected: 0 },
-  };
-  const over = { ...echoGame(), state: ended };
-  expect(clockMs(over)).toBeNull();
+  expect(clockMs(runClock(clocked(), END_MS))).toBeNull();
 });
 
 test("a tick advances a running game and leaves a paused one untouched", () => {
-  const s = echoGame();
-  expect(echoState(tick(s)).moment).toEqual({ kind: "watch", at: -7 });
+  const s = clocked();
+  expect(tick(s).state).toEqual(game.tick?.(s.state));
   const paused = pause(s, "manual");
   expect(tick(paused)).toBe(paused);
 });
 
-test("during the answer, only the second boundaries change what the game shows", () => {
-  const ticks = (s: Session, n: number) =>
-    Array.from({ length: n }).reduce<Session>((acc) => tick(acc), s);
-  const answering = ticks(echoGame(), 14);
-  expect(echoState(answering).moment.kind).toBe("answer");
-  expect(gameView(ticks(answering, 9))).toBe(gameView(answering));
-  expect(gameView(ticks(answering, 10))).not.toBe(gameView(answering));
+test("a tick changes the game view only when it changes what the game shows", () => {
+  const answering = runClock(clocked(), PLAYBACK_MS);
+  const next = tick(answering);
+  expect(next.state).not.toEqual(answering.state);
+  expect(gameView(next)).toBe(gameView(answering));
+  expect(gameView(answering)).not.toBe(gameView(runClock(clocked(), PLAYBACK_MS - PERIOD)));
 });
 
-test("lifting the pause lets the game resume: Echo replays its round", () => {
-  const answering = Array.from({ length: 14 }).reduce<Session>((acc) => tick(acc), echoGame());
-  expect(echoState(answering).moment.kind).toBe("answer");
-  const resumed = togglePause(togglePause(answering));
+test("lifting the pause hands the state to the game's resume", () => {
+  const s = runClock(clocked(), PLAYBACK_MS);
+  const resumed = togglePause(togglePause(s));
   expect(resumed.pause).toBeNull();
-  expect(echoState(resumed).moment).toEqual({ kind: "watch", at: -8 });
+  expect(resumed.state).toEqual(game.resume?.(s.state));
 });
 
 for (const surface of SURFACES) {
-  test(`an Echo answer runs out after 30 seconds on ${surface}`, async ($, on) => {
+  test(`the clock runs a game on screen until it ends on ${surface}`, async ($, on) => {
     const {
       engine: { clock },
       ui,
-    } = await openGame($, on, surface, "echo");
-    await clock.advance(PLAYBACK_MS + 29_900);
-    expect(await ui.find({ type: "Text", text: "Your turn · 1s · round 1 · 2×2" })).toBeDefined();
-    await clock.advance(100);
-    expect(await ui.find({ type: "Text", text: "Time's up · round 1 · 2×2" })).toBeDefined();
+    } = await openGame($, on, surface, CLOCKED);
+    await clock.advance(PLAYBACK_MS);
+    expect(
+      await ui.find({ type: "Text", text: lineOf(runClock(clocked(), PLAYBACK_MS)) }),
+    ).toBeDefined();
+    await clock.advance(END_MS - PLAYBACK_MS);
+    expect(
+      await ui.find({ type: "Text", text: lineOf(runClock(clocked(), END_MS)) }),
+    ).toBeDefined();
     await ui.unmount();
   });
 
-  test(`a paused Echo loses no time and replays its round on ${surface}`, async ($, on) => {
+  test(`a paused game's clock loses no time on ${surface}`, async ($, on) => {
     const {
       engine: { clock },
       ui,
-    } = await openGame($, on, surface, "echo");
-    await clock.advance(PLAYBACK_MS + 10_000);
+    } = await openGame($, on, surface, CLOCKED);
+    const ms = PLAYBACK_MS + 10 * PERIOD;
+    await clock.advance(ms);
     await ui.press({ key: "pane-pause" });
-    await clock.advance(60_000);
-    expect(await ui.find({ type: "Text", text: "Paused · P to resume" })).toBeDefined();
+    await clock.advance(END_MS);
+    expect(await ui.find({ type: "Text", text: pauseLine("manual") })).toBeDefined();
 
     await ui.press({ key: "pane-pause" });
-    expect(await ui.find({ type: "Text", text: "Watch · round 1 · 2×2" })).toBeDefined();
+    const resumed = togglePause(togglePause(runClock(clocked(), ms)));
+    expect(await ui.find({ type: "Text", text: lineOf(resumed) })).toBeDefined();
     await clock.advance(PLAYBACK_MS);
-    expect(await ui.find({ type: "Text", text: "Your turn · 30s · round 1 · 2×2" })).toBeDefined();
+    expect(
+      await ui.find({ type: "Text", text: lineOf(runClock(resumed, PLAYBACK_MS)) }),
+    ).toBeDefined();
     await ui.unmount();
   });
 
-  test(`an Echo round is watched, then answered by keys on ${surface}`, async ($, on) => {
+  test(`a clocked game takes its keys between ticks on ${surface}`, async ($, on) => {
     const {
       engine: { clock },
       ui,
-    } = await openGame($, on, surface, "echo");
-    expect(await ui.find({ type: "Text", text: "Watch · round 1 · 2×2" })).toBeDefined();
+    } = await openGame($, on, surface, CLOCKED);
     await clock.advance(PLAYBACK_MS);
-    expect(await ui.find({ type: "Text", text: "Your turn · 30s · round 1 · 2×2" })).toBeDefined();
+    await pressControls(ui, ANSWER_CONTROLS);
 
-    const moves = [["right"], ["down"], ["right", "down"]][FIRST_CELL - 1] ?? [];
-    for (const id of [...moves, "select"]) await ui.press({ key: `control-${id}` });
-    expect(await ui.find({ type: "Text", text: "Watch · round 2 · 2×2" })).toBeDefined();
-    expect(await ui.find({ type: "Text", text: "score 1 · best 1" })).toBeDefined();
+    const answered = ANSWER_CONTROLS.reduce(control, runClock(clocked(), PLAYBACK_MS));
+    const score = game.status(answered.state).score;
+    expect(await ui.find({ type: "Text", text: lineOf(answered) })).toBeDefined();
+    expect(
+      await ui.find({ type: "Text", text: scoreLine(score, answered.best[CLOCKED] ?? 0) }),
+    ).toBeDefined();
     await ui.unmount();
   });
 }

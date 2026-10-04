@@ -1,126 +1,140 @@
 import type { On } from "claude-code";
 import { type Engine, expect, test } from "claude-code/testing";
-import { ANIMATION_MS } from "../../src/games/2048/svg";
+import { GAME_IDS, GAMES, type GameId } from "../../src/games/index";
+import { pauseLine, scoreLine } from "../../src/pane";
+import { control } from "../../src/session";
+import {
+  ANIMATED,
+  animated,
+  FIRST_MOVE,
+  isBoardMoving,
+  MOTION_MS,
+  NO_MOVE,
+  SECOND_MOVE,
+} from "../fixtures/animated";
 import { gamemods, openGame } from "../fixtures/engine";
 
-const isMoving = (source: string) => /@keyframes s\d+/.test(source);
-
+// The animated game, open on Desktop, just moved
 async function moved($: Engine, on: On) {
-  const { engine, ui } = await openGame($, on, "desktop", "2048");
-  const board = async () => String((await ui.find({ type: "Svg" }))?.props.source);
-  await ui.press({ key: "control-up" });
-  return { engine, clock: engine.clock, ui, board };
+  const { engine, ui } = await openGame($, on, "desktop", ANIMATED);
+  await ui.press({ key: `control-${FIRST_MOVE}` });
+  return {
+    engine,
+    clock: engine.clock,
+    ui,
+    drawing: async () => JSON.stringify(await ui.drawn()),
+    isMoving: () => isBoardMoving(ui),
+  };
 }
 
 test("a move's motion is cleared once its animation has played", async ($, on) => {
-  const { clock, ui, board } = await moved($, on);
-  expect(isMoving(await board())).toBe(true);
+  const { clock, ui, isMoving } = await moved($, on);
+  expect(await isMoving()).toBe(true);
 
-  await clock.advance(ANIMATION_MS - 1);
-  expect(isMoving(await board())).toBe(true);
+  await clock.advance(MOTION_MS - 1);
+  expect(await isMoving()).toBe(true);
   await clock.advance(1);
-  expect(isMoving(await board())).toBe(false);
+  expect(await isMoving()).toBe(false);
   await ui.unmount();
 });
 
 test("a new move replaces the motion and restarts its clock", async ($, on) => {
-  const { clock, ui, board } = await moved($, on);
-  await clock.advance(ANIMATION_MS - 100);
-  const first = await board();
+  const { clock, ui, drawing, isMoving } = await moved($, on);
+  await clock.advance(MOTION_MS - 100);
+  const first = await drawing();
 
-  await ui.press({ key: "control-left" });
-  const second = await board();
-  expect(isMoving(second)).toBe(true);
-  expect(second).not.toBe(first);
+  await ui.press({ key: `control-${SECOND_MOVE}` });
+  expect(await isMoving()).toBe(true);
+  expect(await drawing()).not.toBe(first);
 
   await clock.advance(200);
-  expect(isMoving(await board())).toBe(true);
-  await clock.advance(ANIMATION_MS - 200);
-  expect(isMoving(await board())).toBe(false);
+  expect(await isMoving()).toBe(true);
+  await clock.advance(MOTION_MS - 200);
+  expect(await isMoving()).toBe(false);
   await ui.unmount();
 });
 
 test("a key that moves nothing keeps the motion and its clock", async ($, on) => {
-  const { clock, ui, board } = await moved($, on);
-  await ui.press({ key: "control-left" });
-  const motion = await board();
+  const { clock, ui, drawing, isMoving } = await moved($, on);
   await clock.advance(100);
+  const motion = await drawing();
 
-  await ui.press({ key: "control-left" });
-  expect(await board()).toBe(motion);
-  await clock.advance(ANIMATION_MS - 101);
-  expect(isMoving(await board())).toBe(true);
+  await ui.press({ key: `control-${NO_MOVE}` });
+  expect(await drawing()).toBe(motion);
+  await clock.advance(MOTION_MS - 101);
+  expect(await isMoving()).toBe(true);
   await clock.advance(1);
-  expect(isMoving(await board())).toBe(false);
+  expect(await isMoving()).toBe(false);
   await ui.unmount();
 });
 
 test("a key ignored while paused keeps the motion and its clock", async ($, on) => {
-  const { clock, ui, board } = await moved($, on);
+  const { clock, ui, drawing, isMoving } = await moved($, on);
   await ui.press({ key: "pane-pause" });
-  const motion = await board();
+  const motion = await drawing();
   await clock.advance(100);
 
-  await ui.press({ key: "control-down" });
-  expect(await board()).toBe(motion);
-  await clock.advance(ANIMATION_MS - 101);
-  expect(isMoving(await board())).toBe(true);
+  await ui.press({ key: `control-${SECOND_MOVE}` });
+  expect(await drawing()).toBe(motion);
+  await clock.advance(MOTION_MS - 101);
+  expect(await isMoving()).toBe(true);
   await clock.advance(1);
-  expect(isMoving(await board())).toBe(false);
+  expect(await isMoving()).toBe(false);
   await ui.unmount();
 });
 
 test("a pause lets the animation play out", async ($, on) => {
-  const { clock, ui, board } = await moved($, on);
+  const { clock, ui, isMoving } = await moved($, on);
   await ui.press({ key: "pane-pause" });
-  expect(isMoving(await board())).toBe(true);
+  expect(await isMoving()).toBe(true);
 
-  await clock.advance(ANIMATION_MS);
-  expect(isMoving(await board())).toBe(false);
-  expect(await ui.find({ type: "Text", text: "Paused · P to resume" })).toBeDefined();
+  await clock.advance(MOTION_MS);
+  expect(await isMoving()).toBe(false);
+  expect(await ui.find({ type: "Text", text: pauseLine("manual") })).toBeDefined();
   await ui.unmount();
 });
 
 test("a restart clears the motion", async ($, on) => {
-  const { ui, board } = await moved($, on);
+  const { ui, isMoving } = await moved($, on);
   await ui.press({ key: "pane-restart" });
-  expect(isMoving(await board())).toBe(false);
+  expect(await isMoving()).toBe(false);
   await ui.unmount();
 });
 
 test("the menu clears the motion; the game comes back settled", async ($, on) => {
-  const { ui, board } = await moved($, on);
+  const { ui, isMoving } = await moved($, on);
   await ui.press({ key: "pane-back" });
-  await ui.press({ key: "game-2048" });
-  expect(isMoving(await board())).toBe(false);
+  await ui.press({ key: `game-${ANIMATED}` });
+  expect(await isMoving()).toBe(false);
   await ui.unmount();
 });
 
 test("closing the pane clears the motion", async ($, on) => {
-  const { ui, board } = await moved($, on);
+  const { ui, isMoving } = await moved($, on);
   await gamemods($, "stop");
-  await gamemods($, "2048");
-  expect(isMoving(await board())).toBe(false);
+  await gamemods($, ANIMATED);
+  expect(await isMoving()).toBe(false);
   await ui.unmount();
 });
 
-test("switching game draws the other game, then 2048 settled", async ($, on) => {
-  const { ui, board } = await moved($, on);
-  await gamemods($, "morpion");
-  expect(await ui.find({ type: "Svg" })).toBeUndefined();
-  await gamemods($, "2048");
-  expect(isMoving(await board())).toBe(false);
+test("switching game draws the other game, then the animated one settled", async ($, on) => {
+  const { ui, isMoving } = await moved($, on);
+  const unanimated = GAME_IDS.find((id) => !GAMES[id].game.animation) as GameId;
+  await gamemods($, unanimated);
+  expect(await ui.find({ type: "Text", text: GAMES[unanimated].name })).toBeDefined();
+  await gamemods($, ANIMATED);
+  expect(await isMoving()).toBe(false);
   await ui.unmount();
 });
 
 test("clearing the motion leaves the score and the best score as they were", async ($, on) => {
   const { engine, clock, ui } = await moved($, on);
-  const header = async () => (await ui.find({ type: "Text", text: /^score / }))?.children;
-  const before = await header();
+  const s = control(animated(), FIRST_MOVE);
+  const header = scoreLine(GAMES[ANIMATED].game.status(s.state).score, s.best[ANIMATED] ?? 0);
   const stored = { ...engine.stored };
 
-  await clock.advance(ANIMATION_MS);
-  expect(await header()).toEqual(before);
+  await clock.advance(MOTION_MS);
+  expect(await ui.find({ type: "Text", text: header })).toBeDefined();
   expect(engine.stored).toEqual(stored);
   await ui.unmount();
 });
