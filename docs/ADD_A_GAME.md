@@ -49,9 +49,9 @@ Each step below is optional and stands alone: a game can draw an `Svg` without a
 
 ### Animation
 
-- Add `animation: { ms, play }` to the game. `play(s, id)` plays the key once and returns `{ state, motion }`: the next state, and what the move looks like as JSON, or null. A key that changes nothing returns `s` itself. Define the move once and derive `onControl` from it, `(s, id) => play(s, id).state` (`src/games/2048/2048.ts`).
+- Add `animation: { ms, play }` to the game, and write the type of one move, plain JSON, as its third parameter: `Game<S, YourBoard, YourMotion>` (`Motion` in `src/games/2048/rules.ts`). `play(s, id)` plays the key once and returns `{ state, motion }`: the next state, and the move as a `YourMotion`, or null. A key that changes nothing returns `s` itself. Define the move once and derive `onControl` from it, `(s, id) => play(s, id).state` (`src/games/2048/2048.ts`).
 - `ms`: how long the session keeps the motion before it settles it. At least the longest animation of every renderer (2048: `ANIMATION_MS` of `svg.ts`, longer than the `Client`'s own).
-- The renderer reads `draw.motion` (cast it back to the game's motion type: the session holds the one `play` returned) and `draw.moveId`. With no motion it draws the settled board; an `Svg` replays its CSS at each redraw while the motion lasts, a `Client` starts its own animation on a new `moveId`.
+- The renderer takes a `Draw<YourMotion>` and reads `draw.motion` and `draw.moveId`. With no motion it draws the settled board; an `Svg` replays its CSS at each redraw while the motion lasts, a `Client` starts its own animation on a new `moveId`.
 - Motion is display only: the score, the best score and the pause never read it, and `tick` leaves it alone.
 
 ### Room
