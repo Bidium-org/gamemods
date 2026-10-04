@@ -1,15 +1,13 @@
 import { expect, test } from "claude-code/testing";
-import { menu } from "../src/menu";
-import { initialSession } from "../src/session";
-import { PANE } from "./engine";
+import { menu } from "../../src/menu";
+import { initialSession } from "../../src/session";
+import { mountDrawn, SURFACES } from "../fixtures/engine";
 
-for (const surface of ["desktop", "terminal"] as const) {
+for (const surface of SURFACES) {
   test(`the menu draws one button per game on ${surface}, name only`, async ($, on) => {
-    on("session.start", () => ({ cwd: "/work" }));
-    on("ui.render", ($, e) => menu($.ui.resolve(e), initialSession, () => {}));
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-
-    const ui = await $.ui.mount({ ...PANE, surface });
+    const ui = await mountDrawn($, on, surface, ($, e) =>
+      menu($.ui.resolve(e), initialSession, () => {}),
+    );
     for (const name of ["Morpion", "Hogzzle", "2048"]) {
       expect(await ui.find({ type: "Button", text: name })).toBeDefined();
     }

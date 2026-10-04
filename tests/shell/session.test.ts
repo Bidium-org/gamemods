@@ -1,6 +1,6 @@
 import { expect, test } from "claude-code/testing";
-import { ANIMATION_MS } from "../src/games/2048/svg";
-import type { MorpionState } from "../src/games/morpion/morpion";
+import { ANIMATION_MS } from "../../src/games/2048/svg";
+import type { MorpionState } from "../../src/games/morpion/morpion";
 import {
   chooseGame,
   closePane,
@@ -16,9 +16,8 @@ import {
   settle,
   toggleBand,
   togglePause,
-} from "../src/session";
-
-const SEED = 1;
+} from "../../src/session";
+import { SEED } from "../fixtures/engine";
 
 const morpion = () => chooseGame(initialSession, "morpion", SEED);
 

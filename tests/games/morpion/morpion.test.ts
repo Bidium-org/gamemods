@@ -1,7 +1,7 @@
 import { expect, test } from "claude-code/testing";
-import { createMorpion, type MorpionState } from "../src/games/morpion/morpion";
+import { createMorpion, type MorpionState } from "../../../src/games/morpion/morpion";
+import { SEED } from "../../fixtures/engine";
 
-const SEED = 1;
 const _ = null;
 
 // The strict bot: the rules below hold without its random mistakes

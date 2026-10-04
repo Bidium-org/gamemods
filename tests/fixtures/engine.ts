@@ -1,6 +1,15 @@
-import type { On } from "claude-code";
+import type { Hook, On } from "claude-code";
 import { type Engine, type MockClock, type Mounted, mock } from "claude-code/testing";
-import type { GameId } from "../src/games/index";
+import type { GameId } from "../../src/games/index";
+
+// Every test plays on both surfaces
+export const SURFACES = ["desktop", "terminal"] as const;
+export type Surface = (typeof SURFACES)[number];
+
+// The game seed, and the instant the mock clock starts at
+export const SEED = 1;
+
+const CWD = "/work";
 
 export type EngineLog = {
   registered: unknown[];
@@ -13,16 +22,14 @@ export type EngineLog = {
   clock: MockClock;
 };
 
+type StubOptions = { isPlaced?: boolean; stored?: Record<string, unknown> };
+
 // The engine side of every call the mod makes: what it registers, opens, closes, toasts and stores.
 // `isPlaced: false` plays a surface that leaves the pane undrawn.
-export function stubEngine(
-  on: On,
-  { isPlaced = true, stored = {} }: { isPlaced?: boolean; stored?: Record<string, unknown> } = {},
-): EngineLog {
-  // The game seed: its careless bot lets WINNING_KEYS win; LOSING_2048_KEYS end a 2048 game
-  const clock = mock.clock(on, { now: 1 });
+export function stubEngine(on: On, { isPlaced = true, stored = {} }: StubOptions = {}): EngineLog {
+  const clock = mock.clock(on, { now: SEED });
   const log: EngineLog = { registered: [], opened: [], closed: [], toasts: [], stored, clock };
-  on("session.start", () => ({ cwd: "/work" }));
+  on("session.start", () => ({ cwd: CWD }));
   on("ui.render", () => ({ type: "Text", props: {}, children: ["engine band"] }));
   on("command.register", (_$, e) => {
     log.registered.push(e);
@@ -56,6 +63,9 @@ export function stubEngine(
   return log;
 }
 
+// What the engine records when the mod opens its pane
+export const PANE_OPENED = { id: "gamemods", title: "Gamemods", focus: true };
+
 export const BAND = {
   plugin: "gamemods",
   component: "AbovePrompt",
@@ -86,7 +96,8 @@ export const PANE = {
   },
 } as const;
 
-export type Surface = "desktop" | "terminal";
+// The frame the pane draws around a paused game
+export const PAUSE_FRAME = '"borderColor":"#d97757"';
 
 // The band opens a game, as in a session
 export async function openFromBand($: Engine, surface: Surface, id: GameId) {
@@ -94,6 +105,55 @@ export async function openFromBand($: Engine, surface: Surface, id: GameId) {
   await band.press({ key: "band-toggle" });
   await band.press({ key: `game-${id}` });
   await band.unmount();
+}
+
+// The engine stubbed and a session started on `surface`
+export async function startSession($: Engine, on: On, surface: Surface, options?: StubOptions) {
+  const engine = stubEngine(on, options);
+  await $.session.start({ surface, isInteractive: true, cwd: CWD });
+  return engine;
+}
+
+// The pane's mount spec, with the props a test varies
+export const paneWith = ({
+  isFocused = true,
+  bodyRows = PANE.props.scroll.bodyRows,
+  placement = PANE.props.placement,
+}: {
+  isFocused?: boolean;
+  bodyRows?: number;
+  placement?: "dock" | "inline";
+} = {}) => ({
+  ...PANE,
+  props: { ...PANE.props, isFocused, placement, scroll: { offset: 0, bodyRows } },
+});
+
+// A session with `id` open from the band, its pane mounted: what most tests start from
+export async function openGame(
+  $: Engine,
+  on: On,
+  surface: Surface,
+  id: GameId,
+  { pane = paneWith(), ...options }: StubOptions & { pane?: ReturnType<typeof paneWith> } = {},
+) {
+  const engine = await startSession($, on, surface, options);
+  await openFromBand($, surface, id);
+  const ui = await $.ui.mount({ ...pane, surface });
+  return { engine, ui };
+}
+
+// A session where `draw` renders the mount in place of the mod, for one function under test
+export async function mountDrawn(
+  $: Engine,
+  on: On,
+  surface: Surface,
+  draw: Hook<"ui.render">,
+  spec: Omit<Parameters<Engine["ui"]["mount"]>[0], "surface"> = PANE,
+) {
+  on("session.start", () => ({ cwd: CWD }));
+  on("ui.render", draw);
+  await $.session.start({ surface, isInteractive: true, cwd: CWD });
+  return $.ui.mount({ ...spec, surface });
 }
 
 export const pressAll = async <S extends Surface>(ui: Mounted<S, "Pane">, keys: string[]) => {

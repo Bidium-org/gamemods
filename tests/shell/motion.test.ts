@@ -1,15 +1,12 @@
 import type { On } from "claude-code";
 import { type Engine, expect, test } from "claude-code/testing";
-import { ANIMATION_MS } from "../src/games/2048/svg";
-import { gamemods, openFromBand, PANE, stubEngine } from "./engine";
+import { ANIMATION_MS } from "../../src/games/2048/svg";
+import { gamemods, openGame } from "../fixtures/engine";
 
 const isMoving = (source: string) => /@keyframes s\d+/.test(source);
 
 async function moved($: Engine, on: On) {
-  const engine = stubEngine(on);
-  await $.session.start({ surface: "desktop", isInteractive: true, cwd: "/work" });
-  await openFromBand($, "desktop", "2048");
-  const ui = await $.ui.mount({ ...PANE, surface: "desktop" });
+  const { engine, ui } = await openGame($, on, "desktop", "2048");
   const board = async () => String((await ui.find({ type: "Svg" }))?.props.source);
   await ui.press({ key: "control-up" });
   return { engine, clock: engine.clock, ui, board };

@@ -1,21 +1,15 @@
 import type { On } from "claude-code";
 import { type Engine, expect, test } from "claude-code/testing";
-import { fitLayout, GAIN_MS, layoutHeight } from "../src/games/2048/client";
-import { mix, PALETTE, vivid } from "../src/games/2048/palette";
-import { openFromBand, PANE, pressAll, stubEngine } from "./engine";
+import { fitLayout, GAIN_MS, layoutHeight } from "../../../src/games/2048/client";
+import { mix, PALETTE, vivid } from "../../../src/games/2048/palette";
+import { openGame, PAUSE_FRAME, paneWith, pressAll } from "../../fixtures/engine";
 
 const KEY = "board-2048";
 
 const LIGHT_COLORS = [PALETTE.empty, PALETTE.super, ...Object.values(PALETTE.tiles)];
 
-const paneWith = (bodyRows: number, isFocused = true) =>
-  ({ ...PANE, props: { ...PANE.props, isFocused, scroll: { offset: 0, bodyRows } } }) as const;
-
-async function terminalBoard($: Engine, on: On, pane = paneWith(PANE.props.scroll.bodyRows)) {
-  stubEngine(on);
-  await $.session.start({ surface: "terminal", isInteractive: true, cwd: "/work" });
-  await openFromBand($, "terminal", "2048");
-  const ui = await $.ui.mount({ ...pane, surface: "terminal" });
+async function terminalBoard($: Engine, on: On, pane = paneWith()) {
+  const { ui } = await openGame($, on, "terminal", "2048", { pane });
   const tiles = async () =>
     (await ui.findAll({ type: "Box", in: KEY })).filter((box) => box.props.width === 8);
   const sliding = async () => (await tiles()).filter((box) => box.props.position === "absolute");
@@ -121,7 +115,7 @@ for (const [isFocused, rowGap] of [
   [false, 0],
 ] as const) {
   test(`the board takes the rows the pane leaves it, focused ${isFocused}`, async ($, on) => {
-    const { ui, tiles } = await terminalBoard($, on, paneWith(26, isFocused));
+    const { ui, tiles } = await terminalBoard($, on, paneWith({ bodyRows: 26, isFocused }));
     expect((await tiles()).every((tile) => tile.props.height === 3)).toBe(true);
     const grid = (await ui.findAll({ type: "Box", in: KEY })).find(
       (box) => box.props.rowGap !== undefined,
@@ -139,5 +133,24 @@ test("a pause dims every tile and keeps the Client mounted", async ($, on) => {
 
   await ui.press({ key: "pane-pause" });
   expect((await colors()).filter((color) => !LIGHT_COLORS.includes(color))).toEqual([]);
+  await ui.unmount();
+});
+
+test("a 2048 game draws its board in a Client on terminal, moved by w a s d", async ($, on) => {
+  const { ui } = await openGame($, on, "terminal", "2048");
+  const tiles = () => ui.findAll({ type: "Text", text: /^\d+$/, in: "board-2048" });
+  expect(await ui.find({ type: "Client", key: "board-2048" })).toBeDefined();
+  expect(await ui.find({ type: "Svg" })).toBeUndefined();
+  expect(await ui.find({ key: "board-row-0" })).toBeUndefined();
+  expect(await ui.find({ key: "control-up" })).toBeDefined();
+  expect(await tiles()).toHaveLength(2);
+
+  await ui.press({ key: "control-up" });
+  await ui.advance(GAIN_MS);
+  expect(await tiles()).toHaveLength(3);
+
+  await ui.press({ key: "pane-pause" });
+  expect(JSON.stringify(await ui.drawn()).includes(PAUSE_FRAME)).toBe(true);
+  expect(await ui.find({ type: "Client", key: "board-2048" })).toBeDefined();
   await ui.unmount();
 });

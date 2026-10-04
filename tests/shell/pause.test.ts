@@ -1,7 +1,15 @@
 import { type Engine, expect, test } from "claude-code/testing";
-import { gamemods, openFromBand, PANE, stubEngine } from "./engine";
+import {
+  gamemods,
+  openFromBand,
+  openGame,
+  PANE,
+  paneWith,
+  SURFACES,
+  startSession,
+} from "../fixtures/engine";
 
-const UNFOCUSED = { ...PANE.props, isFocused: false } as const;
+const UNFOCUSED = paneWith({ isFocused: false });
 
 // Claude asks for a permission: the engine is about to show the dialog
 const permissionAsked = ($: Engine) =>
@@ -20,12 +28,9 @@ const turnEnds = ($: Engine, agentId?: string) =>
     ...(agentId && { agentId }),
   });
 
-for (const surface of ["desktop", "terminal"] as const) {
+for (const surface of SURFACES) {
   test(`a permission dialog pauses the game and its keys on ${surface}`, async ($, on) => {
-    stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await openFromBand($, surface, "morpion");
-    const ui = await $.ui.mount({ ...PANE, surface });
+    const { ui } = await openGame($, on, surface, "morpion");
 
     await permissionAsked($);
     expect(
@@ -41,13 +46,10 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`the dialog's reason stays when the pane then loses the focus on ${surface}`, async ($, on) => {
-    stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await openFromBand($, surface, "morpion");
-    const ui = await $.ui.mount({ ...PANE, surface });
+    const { ui } = await openGame($, on, surface, "morpion");
 
     await permissionAsked($);
-    await ui.redraw(UNFOCUSED);
+    await ui.redraw(UNFOCUSED.props);
     expect(
       await ui.find({ type: "Text", text: /^Paused: permission requested · P to resume$/ }),
     ).toBeDefined();
@@ -55,12 +57,9 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`losing the focus pauses, getting it back does not resume, on ${surface}`, async ($, on) => {
-    stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await openFromBand($, surface, "morpion");
-    const ui = await $.ui.mount({ ...PANE, surface });
+    const { ui } = await openGame($, on, surface, "morpion");
 
-    await ui.redraw(UNFOCUSED);
+    await ui.redraw(UNFOCUSED.props);
     expect(
       await ui.find({ type: "Text", text: /^Paused: the game lost the keyboard/ }),
     ).toBeDefined();
@@ -72,10 +71,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`a game opened without the focus is not paused on ${surface}`, async ($, on) => {
-    stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await openFromBand($, surface, "morpion");
-    const ui = await $.ui.mount({ ...PANE, props: UNFOCUSED, surface });
+    const { ui } = await openGame($, on, surface, "morpion", { pane: UNFOCUSED });
 
     expect(await ui.find({ type: "Text", text: "Your move" })).toBeDefined();
     await ui.redraw(PANE.props);
@@ -85,10 +81,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`the end of Claude's turn pauses the game, a subagent's does not, on ${surface}`, async ($, on) => {
-    stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await openFromBand($, surface, "morpion");
-    const ui = await $.ui.mount({ ...PANE, surface });
+    const { ui } = await openGame($, on, surface, "morpion");
 
     await $.turn.start({ text: "work", turnId: "t1" });
     expect(await ui.find({ type: "Text", text: "Claude is working" })).toBeDefined();
@@ -104,8 +97,7 @@ for (const surface of ["desktop", "terminal"] as const) {
 
   // The kit cannot raise the person's close mark: `/gamemods stop` takes the same transition
   test(`closing the pane pauses the game on ${surface}`, async ($, on) => {
-    stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    await startSession($, on, surface);
     await openFromBand($, surface, "morpion");
 
     await gamemods($, "stop");

@@ -1,12 +1,9 @@
 import { expect, test } from "claude-code/testing";
-import { PALETTE } from "../src/games/2048/palette";
-import { type Grid, move, type Roll, type TwentyFortyEightState } from "../src/games/2048/rules";
-import { tilesSource } from "../src/games/2048/svg";
-
-const _ = 0;
-const alwaysTwoFirstCell: Roll = (rng) => [0, rng];
-
-const state = (grid: Grid, score = 0): TwentyFortyEightState => ({ grid, score, rng: 0 });
+import { PALETTE } from "../../../src/games/2048/palette";
+import { move } from "../../../src/games/2048/rules";
+import { tilesSource } from "../../../src/games/2048/svg";
+import { openGame, PAUSE_FRAME } from "../../fixtures/engine";
+import { _, alwaysTwoFirstCell, state } from "./fixture";
 
 const DIGIT_HEIGHT = 0.75;
 
@@ -83,4 +80,25 @@ test("a pause veils the board, its tiles still drawn", () => {
   const dimmed = tilesSource(START.grid, null, { dimmed: true });
   expect(veil.test(dimmed)).toBe(true);
   expect(count(dimmed, /url\(#lift\)/g)).toBe(4);
+});
+
+test("a 2048 game draws its board as an image in the frame on desktop", async ($, on) => {
+  const { ui } = await openGame($, on, "desktop", "2048");
+  const svg = await ui.find({ type: "Svg" });
+  expect(svg?.props).toMatchObject({ alt: "2048 board, score 0" });
+  expect(svg?.props.isInteractive).toBeUndefined();
+  expect(await ui.find({ type: "Client" })).toBeUndefined();
+  expect(await ui.find({ key: "board-row-0" })).toBeUndefined();
+  expect(await ui.find({ type: "Text", text: "score 0 · best 0" })).toBeDefined();
+
+  const before = String(svg?.props.source);
+  await ui.press({ key: "control-up" });
+  const after = String((await ui.find({ type: "Svg" }))?.props.source);
+  expect(after).not.toBe(before);
+  expect(/@keyframes s\d+/.test(after)).toBe(true);
+
+  await ui.press({ key: "pane-pause" });
+  expect(JSON.stringify(await ui.drawn()).includes(PAUSE_FRAME)).toBe(true);
+  expect(String((await ui.find({ type: "Svg" }))?.props.source)).toContain('fill-opacity=".55"');
+  await ui.unmount();
 });

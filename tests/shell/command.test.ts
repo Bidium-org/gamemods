@@ -1,7 +1,7 @@
 import { expect, test } from "claude-code/testing";
-import { WIDEN } from "../src/band";
-import { parseArgs } from "../src/command";
-import { BAND, gamemods, PANE, stubEngine } from "./engine";
+import { WIDEN } from "../../src/band";
+import { parseArgs } from "../../src/command";
+import { BAND, gamemods, PANE, PANE_OPENED, SURFACES, startSession } from "../fixtures/engine";
 
 test("no argument opens the menu", () => {
   expect(parseArgs("")).toEqual({ kind: "menu" });
@@ -28,20 +28,18 @@ test("only the first word counts", () => {
   expect(parseArgs("pong morpion")).toEqual({ kind: "menu" });
 });
 
-for (const surface of ["desktop", "terminal"] as const) {
+for (const surface of SURFACES) {
   test(`the command registers as immediate on ${surface}`, async ($, on) => {
-    const engine = stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    const engine = await startSession($, on, surface);
     expect(engine.registered).toEqual([
       expect.objectContaining({ name: "gamemods", immediate: true, argumentHint: "[game|stop]" }),
     ]);
   });
 
   test(`/gamemodsopens the pane on its menu on ${surface}`, async ($, on) => {
-    const engine = stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    const engine = await startSession($, on, surface);
     await gamemods($);
-    expect(engine.opened).toEqual([{ id: "gamemods", title: "Gamemods", focus: true }]);
+    expect(engine.opened).toEqual([PANE_OPENED]);
 
     const ui = await $.ui.mount({ ...PANE, surface });
     for (const id of ["morpion", "hogzzle", "2048"]) {
@@ -51,8 +49,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`/gamemods<id> opens that game on ${surface}`, async ($, on) => {
-    const engine = stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    const engine = await startSession($, on, surface);
     await gamemods($, "hogzzle");
     expect(engine.opened).toHaveLength(1);
 
@@ -63,8 +60,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`/gamemodswith an unknown id opens the menu on ${surface}`, async ($, on) => {
-    stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    await startSession($, on, surface);
     await gamemods($, "pong");
 
     const ui = await $.ui.mount({ ...PANE, surface });
@@ -74,8 +70,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`/gamemodsstop closes the pane and keeps the game on ${surface}`, async ($, on) => {
-    const engine = stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    const engine = await startSession($, on, surface);
     await gamemods($, "hogzzle");
     await gamemods($, "stop");
     expect(engine.closed).toEqual(["gamemods"]);
@@ -94,8 +89,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`an unplaced pane is explained in the band on ${surface}`, async ($, on) => {
-    const engine = stubEngine(on, { isPlaced: false });
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    const engine = await startSession($, on, surface, { isPlaced: false });
     await gamemods($, "morpion");
     expect(engine.toasts).toEqual([]);
 
@@ -105,8 +99,7 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`an unplaced pane toasts when the band is hidden on ${surface}`, async ($, on) => {
-    const engine = stubEngine(on, { isPlaced: false });
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
+    const engine = await startSession($, on, surface, { isPlaced: false });
     const band = await $.ui.mount({ ...BAND, surface });
     await band.press({ key: "band-close" });
     await band.unmount();

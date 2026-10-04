@@ -1,5 +1,5 @@
 import { expect, test } from "claude-code/testing";
-import { type EchoState, echo } from "../src/games/echo/echo";
+import { type EchoState, echo } from "../../src/games/echo/echo";
 import {
   chooseGame,
   clockMs,
@@ -10,10 +10,8 @@ import {
   type Session,
   tick,
   togglePause,
-} from "../src/session";
-import { openFromBand, PANE, stubEngine } from "./engine";
-
-const SEED = 1;
+} from "../../src/session";
+import { openGame, SEED, SURFACES } from "../fixtures/engine";
 
 const echoGame = () => chooseGame(initialSession, "echo", SEED);
 
@@ -62,13 +60,12 @@ test("lifting the pause lets the game resume: Echo replays its round", () => {
   expect(echoState(resumed).moment).toEqual({ kind: "watch", at: -8 });
 });
 
-for (const surface of ["desktop", "terminal"] as const) {
+for (const surface of SURFACES) {
   test(`an Echo answer runs out after 30 seconds on ${surface}`, async ($, on) => {
-    const { clock } = stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await openFromBand($, surface, "echo");
-
-    const ui = await $.ui.mount({ ...PANE, surface });
+    const {
+      engine: { clock },
+      ui,
+    } = await openGame($, on, surface, "echo");
     await clock.advance(PLAYBACK_MS + 29_900);
     expect(await ui.find({ type: "Text", text: "Your turn · 1s · round 1 · 2×2" })).toBeDefined();
     await clock.advance(100);
@@ -77,11 +74,10 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`a paused Echo loses no time and replays its round on ${surface}`, async ($, on) => {
-    const { clock } = stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await openFromBand($, surface, "echo");
-
-    const ui = await $.ui.mount({ ...PANE, surface });
+    const {
+      engine: { clock },
+      ui,
+    } = await openGame($, on, surface, "echo");
     await clock.advance(PLAYBACK_MS + 10_000);
     await ui.press({ key: "pane-pause" });
     await clock.advance(60_000);
@@ -95,11 +91,10 @@ for (const surface of ["desktop", "terminal"] as const) {
   });
 
   test(`an Echo round is watched, then answered by keys on ${surface}`, async ($, on) => {
-    const { clock } = stubEngine(on);
-    await $.session.start({ surface, isInteractive: true, cwd: "/work" });
-    await openFromBand($, surface, "echo");
-
-    const ui = await $.ui.mount({ ...PANE, surface });
+    const {
+      engine: { clock },
+      ui,
+    } = await openGame($, on, surface, "echo");
     expect(await ui.find({ type: "Text", text: "Watch · round 1 · 2×2" })).toBeDefined();
     await clock.advance(PLAYBACK_MS);
     expect(await ui.find({ type: "Text", text: "Your turn · 30s · round 1 · 2×2" })).toBeDefined();

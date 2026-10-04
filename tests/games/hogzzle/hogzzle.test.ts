@@ -1,8 +1,7 @@
 import { expect, test } from "claude-code/testing";
-import { createHogzzle, type HogzzleState } from "../src/games/hogzzle/hogzzle";
-import { type Grid, PICTURES, type Picture } from "../src/games/hogzzle/pictures.gen";
-
-const SEED = 1;
+import { createHogzzle, type HogzzleState } from "../../../src/games/hogzzle/hogzzle";
+import { type Grid, PICTURES, type Picture } from "../../../src/games/hogzzle/pictures.gen";
+import { SEED } from "../../fixtures/engine";
 
 const grid = (columns: number, rows: number, looks?: number[]): Grid => ({
   columns,

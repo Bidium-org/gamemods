@@ -1,7 +1,7 @@
 import { expect, test } from "claude-code/testing";
-import { type EchoState, echo } from "../src/games/echo/echo";
+import { type EchoState, echo } from "../../../src/games/echo/echo";
+import { SEED } from "../../fixtures/engine";
 
-const SEED = 1;
 const LEAD = 8;
 const ANSWER = 300;
 const LIT = "#5fafff";
