@@ -6,7 +6,7 @@
 
 Play games in Claude Code while Claude works. Gamemods is a Claude Code mod (plugin): a game menu in the band above the prompt, each game in a side pane. It works in the terminal and in Desktop. Every key is answered locally: zero model calls, zero tokens, nothing added to the conversation.
 
-<video src="assets/gamemods.mp4" controls muted loop width="100%"></video>
+https://github.com/user-attachments/assets/4ed57392-6d74-4186-94d2-9fe6d065f97f
 
 ## Games
 
