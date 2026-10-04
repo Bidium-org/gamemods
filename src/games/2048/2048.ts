@@ -8,6 +8,7 @@ import {
   type Direction,
   hasMovesLeft,
   hasReachedGoal,
+  type Motion,
   move,
   newGame,
   type TwentyFortyEightState,
@@ -17,13 +18,13 @@ import { tilesClient } from "./terminal";
 
 const isDirection = (id: string): id is Direction => DIRECTIONS.some((d) => d === id);
 
-const play = (s: TwentyFortyEightState, id: string): Play<TwentyFortyEightState> => {
+const play = (s: TwentyFortyEightState, id: string): Play<TwentyFortyEightState, Motion> => {
   if (!isDirection(id)) return { state: s, motion: null };
   const { state, motion } = move(s, id);
   return { state, motion: motion ?? null };
 };
 
-export const twentyFortyEight: Game<TwentyFortyEightState, TileBoard> = {
+export const twentyFortyEight: Game<TwentyFortyEightState, TileBoard, Motion> = {
   controls: MOVES,
   size: { columns: 38, rows: 26 },
   init: (seed) => newGame(seed),

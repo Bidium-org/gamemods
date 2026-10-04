@@ -1,10 +1,11 @@
+import type { JsonValue } from "claude-code";
 import { twentyFortyEight } from "./2048/2048";
 import { echo } from "./echo/echo";
 import type { Game } from "./game";
 import { hogzzle } from "./hogzzle/hogzzle";
 import { morpion } from "./morpion/morpion";
 
-export type GameEntry = { name: string; tagline: string; game: Game<unknown, unknown> };
+export type GameEntry = { name: string; tagline: string; game: Game<unknown, unknown, JsonValue> };
 
 // The key is the game's id: typed after `/gamemods` and stored with the best score, so it never changes
 const ENTRIES = {

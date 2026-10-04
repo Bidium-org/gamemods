@@ -96,9 +96,9 @@ ${dimmed ? `<rect y="${GAIN_ROOM}" width="${BOARD}" height="${BOARD}" rx="20" fi
 export const tilesSvg = (
   { Svg }: SvgElements,
   board: TileBoard,
-  { dimmed, motion }: Draw,
+  { dimmed, motion }: Draw<Motion>,
 ): RenderElement =>
   Svg({
-    source: tilesSource(board.grid, motion as Motion | null, { dimmed }),
+    source: tilesSource(board.grid, motion, { dimmed }),
     alt: `2048 board, score ${board.score}`,
   });

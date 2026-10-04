@@ -10,14 +10,14 @@ export type ClientElements = Pick<ElementTable<"terminal">, "Client">;
 export const tilesClient = (
   { Client }: ClientElements,
   board: TileBoard,
-  { dimmed, motion, moveId, room }: Draw,
+  { dimmed, motion, moveId, room }: Draw<Motion>,
 ): RenderElement =>
   Client({
     key: "board-2048",
     module: "./client.ts",
     props: {
       grid: board.grid,
-      motion: motion as Motion | null,
+      motion,
       moveId,
       rows: room.rows,
       dimmed,
