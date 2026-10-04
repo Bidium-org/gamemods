@@ -52,6 +52,9 @@ const boardElements = (
   ...(surface === "terminal" && Client && { Client }),
 });
 
+const backButton = (Button: MenuElements["Button"], onBack: () => void): RenderElement =>
+  Button({ key: "pane-back", label: "Menu", hotkey: "q", plain: true, onPress: onBack });
+
 function gameScreen(
   els: MenuElements,
   session: Session,
@@ -122,13 +125,7 @@ function gameScreen(
             plain: true,
             onPress: actions.onRestart,
           }),
-          Button({
-            key: "pane-back",
-            label: "Menu",
-            hotkey: "q",
-            plain: true,
-            onPress: actions.onBack,
-          }),
+          backButton(Button, actions.onBack),
         ],
       }),
     ],
@@ -167,13 +164,7 @@ export function pane(
   }
   const { name, game } = GAMES[id];
   const title = Text({ bold: true, children: [name] });
-  const back = Button({
-    key: "pane-back",
-    label: "Menu",
-    hotkey: "q",
-    plain: true,
-    onPress: actions.onBack,
-  });
+  const back = backButton(Button, actions.onBack);
   const drawn = game.render(boardElements(els, view.surface), game.board(session.state), {
     dimmed: session.pause !== null,
     motion: session.motion,
