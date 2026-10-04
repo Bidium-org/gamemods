@@ -25,6 +25,8 @@ export type Session = {
   best: Partial<Record<GameId, number>>;
 };
 
+export const bestKey = (id: GameId): string => `best:${id}`;
+
 export const initialSession: Session = {
   screen: "closed",
   bandExpanded: false,
@@ -59,7 +61,11 @@ export const pause = (s: Session, reason: PauseReason): Session =>
 // Lifting the pause lets the game pick up again, as `resume` decides
 const unpause = (s: Session): Session => {
   const resume = currentGame(s)?.resume;
-  return { ...s, pause: null, state: resume && s.state !== null ? resume(s.state) : s.state };
+  return {
+    ...s,
+    pause: null,
+    state: resume && s.state !== null ? resume(s.state) : s.state,
+  };
 };
 
 export const togglePause = (s: Session): Session => (s.pause ? unpause(s) : pause(s, "manual"));

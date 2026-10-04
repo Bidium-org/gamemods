@@ -7,6 +7,9 @@ import type { PauseReason, Session } from "./session";
 
 export const WIDEN_PANE = "Widen the window to play";
 export const NOT_ON_SURFACE = "This game is not playable here yet. Play it in Claude Code Desktop.";
+// Shown while the pane has no keyboard
+export const CLICK_TO_PLAY = "Click the game to play";
+export const CLICK_FOR_KEYBOARD = "Click here to use the keyboard";
 
 export type PaneActions = {
   onChoose: (id: GameId) => void;
@@ -26,7 +29,7 @@ export type PaneView = {
 };
 
 // Anthropic's orange: a paused game must read as paused at a glance
-const PAUSE_COLOR = "#d97757";
+export const PAUSE_COLOR = "#d97757";
 
 // Header, frame and legend around the board, with the gaps between them
 const CHROME_ROWS = 9;
@@ -40,6 +43,12 @@ const PAUSE_LINE: Record<PauseReason, string> = {
   "turn-end": "Paused: Claude answered",
   menu: "Paused",
 };
+
+export const pauseLine = (reason: PauseReason): string => `${PAUSE_LINE[reason]} · P to resume`;
+
+export const pauseLabel = (isPaused: boolean): string => (isPaused ? "Resume" : "Pause");
+
+export const scoreLine = (score: number, best: number): string => `score ${score} · best ${best}`;
 
 // Svg draws only off the terminal; Client loads only on it, although Desktop's table lists one
 const boardElements = (
@@ -75,7 +84,7 @@ function gameScreen(
           Text({ bold: true, children: [name] }),
           Text({
             dimColor: true,
-            children: [`score ${status.score} · best ${session.best[id] ?? 0}`],
+            children: [scoreLine(status.score, session.best[id] ?? 0)],
           }),
         ],
       }),
@@ -83,7 +92,7 @@ function gameScreen(
         ? Text({
             bold: true,
             color: PAUSE_COLOR,
-            children: [`${PAUSE_LINE[session.pause]} · P to resume`],
+            children: [pauseLine(session.pause)],
           })
         : Text({ children: [status.line] }),
       Text({ dimColor: true, children: [claudeState(session.isWorking)] }),
@@ -113,7 +122,7 @@ function gameScreen(
         children: [
           Button({
             key: "pane-pause",
-            label: session.pause ? "Resume" : "Pause",
+            label: pauseLabel(session.pause !== null),
             hotkey: "p",
             plain: true,
             onPress: actions.onPause,
@@ -160,7 +169,7 @@ export function pane(
     });
 
   if (!id) {
-    return root([hint("Click here to use the keyboard"), menu(els, session, actions.onChoose)]);
+    return root([hint(CLICK_FOR_KEYBOARD), menu(els, session, actions.onChoose)]);
   }
   const { name, game } = GAMES[id];
   const title = Text({ bold: true, children: [name] });
@@ -175,15 +184,10 @@ export function pane(
     },
   });
   if (!drawn) {
-    return root([
-      hint("Click the game to play"),
-      title,
-      Text({ children: [NOT_ON_SURFACE] }),
-      back,
-    ]);
+    return root([hint(CLICK_TO_PLAY), title, Text({ children: [NOT_ON_SURFACE] }), back]);
   }
   if (view.bodyColumns < game.size.columns || view.bodyRows < game.size.rows) {
     return root([title, Text({ children: [WIDEN_PANE] }), back]);
   }
-  return root([hint("Click the game to play"), ...gameScreen(els, session, id, drawn, actions)]);
+  return root([hint(CLICK_TO_PLAY), ...gameScreen(els, session, id, drawn, actions)]);
 }

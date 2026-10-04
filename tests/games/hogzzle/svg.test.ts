@@ -1,7 +1,8 @@
 import { expect, test } from "claude-code/testing";
+import { SVG_MAX } from "../../../src/games/game";
 import type { PictureBoard } from "../../../src/games/hogzzle/board";
 import { PICTURES } from "../../../src/games/hogzzle/pictures.gen";
-import { boardSvg, pictureSource, SVG_MAX } from "../../../src/games/hogzzle/svg";
+import { boardSvg, pictureSource } from "../../../src/games/hogzzle/svg";
 import { NOT_ON_SURFACE } from "../../../src/pane";
 import { mountDrawn, openGame } from "../../fixtures/engine";
 

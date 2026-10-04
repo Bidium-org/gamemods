@@ -6,8 +6,6 @@ import { PICTURE_IMAGES } from "./images.gen";
 // The types give Svg no `key`, yet Desktop reads one: it keeps the first drawing of a key
 type KeyedSvg = (props: Parameters<SvgElements["Svg"]>[0] & { key: string }) => RenderElement;
 
-// The engine refuses a longer source
-export const SVG_MAX = 131_072;
 // CSS pixels; the Desktop dock pane fits 300
 const DRAW_WIDTH = 300;
 

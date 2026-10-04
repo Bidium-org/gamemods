@@ -4,7 +4,7 @@ import { pausedGameId, type Session } from "./session";
 
 export type MenuElements = Pick<ElementTable<"terminal">, "Box" | "Text" | "Button">;
 
-const describe = (id: GameId, session: Session): string => {
+export const describe = (id: GameId, session: Session): string => {
   const paused = pausedGameId(session) === id ? ["paused"] : [];
   return [...paused, `best ${session.best[id] ?? 0}`, GAMES[id].tagline].join(" · ");
 };

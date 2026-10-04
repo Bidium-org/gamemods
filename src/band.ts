@@ -5,6 +5,12 @@ import { pausedGameId, type Session } from "./session";
 
 export const WIDEN = "Widen the window to open the game";
 
+export const BAND_TITLE = "GAMEMODS";
+
+export const toggleLabel = (isExpanded: boolean): string => (isExpanded ? "Fold" : "Games");
+
+export const pausedMention = (name: string): string => `${name} paused`;
+
 export const claudeState = (isWorking: boolean): string =>
   isWorking ? "Claude is working" : "Claude is waiting";
 
@@ -42,12 +48,12 @@ export function band(
             flexDirection: "row",
             columnGap: 2,
             children: [
-              Text({ bold: true, children: ["GAMEMODS"] }),
+              Text({ bold: true, children: [BAND_TITLE] }),
               Text({ dimColor: true, children: [claudeState(view.isWorking)] }),
-              paused ? Text({ children: [`${paused.name} paused`] }) : null,
+              paused ? Text({ children: [pausedMention(paused.name)] }) : null,
               Button({
                 key: "band-toggle",
-                label: session.bandExpanded ? "Fold" : "Games",
+                label: toggleLabel(session.bandExpanded),
                 onPress: actions.onToggle,
               }),
             ],
