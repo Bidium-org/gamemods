@@ -2,7 +2,7 @@
   "name": "gamemods",
   "description": "Games for Claude Code: play while Claude works",
   "owner": {
-    "name": "Birium",
+    "name": "Bidium",
     "email": "bidiumdev@gmail.com"
   },
   "plugins": [

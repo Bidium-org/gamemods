@@ -12,7 +12,7 @@ https://github.com/user-attachments/assets/4ed57392-6d74-4186-94d2-9fe6d065f97f
 
 Gamemods started as a way to try Claude Code mods and to have a good time doing it. It is not a productivity tool and it does not take itself too seriously: think of it as an arcade cabinet for Claude, where you play a round while Claude works. It feels good to ship something fun next to the everyday grind.
 
-The cabinet is meant to fill up. If you have a game in mind, add it: a game is a small pure module, and [docs/ADD_A_GAME.md](docs/ADD_A_GAME.md) walks you through it. Not sure yet? Open a [game proposal](https://github.com/Birium/gamemods/issues/new?template=game_proposal.yml) and let's talk.
+The cabinet is meant to fill up. If you have a game in mind, add it: a game is a small pure module, and [docs/ADD_A_GAME.md](docs/ADD_A_GAME.md) walks you through it. Not sure yet? Open a [game proposal](https://github.com/bidium-org/gamemods/issues/new?template=game_proposal.yml) and let's talk.
 
 ## Requirements
 
@@ -24,14 +24,14 @@ The cabinet is meant to fill up. If you have a game in mind, add it: a game is a
 From a terminal:
 
 ```bash
-claude plugin marketplace add Birium/gamemods
+claude plugin marketplace add bidium-org/gamemods
 ```
 
 ```bash
 claude plugin install gamemods@gamemods
 ```
 
-Or inside a Claude Code session: `/plugin marketplace add Birium/gamemods`, then `/plugin install gamemods@gamemods`. In Desktop: **+** next to the prompt, **Plugins**, **Add plugin**. Desktop and terminal share the same settings, so one install covers both.
+Or inside a Claude Code session: `/plugin marketplace add bidium-org/gamemods`, then `/plugin install gamemods@gamemods`. In Desktop: **+** next to the prompt, **Plugins**, **Add plugin**. Desktop and terminal share the same settings, so one install covers both.
 
 ## Play
 
@@ -78,7 +78,7 @@ Security issues: [SECURITY.md](SECURITY.md).
 
 ## License
 
-[MIT](LICENSE) © Birium
+[MIT](LICENSE) © Bidium
 
 Hogzzle's pictures are © PostHog, used unmodified and not covered by this license: see [Hogzzle → Pictures](src/games/hogzzle/README.md#pictures).
 

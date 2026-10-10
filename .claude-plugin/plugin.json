@@ -2,9 +2,9 @@
   "name": "gamemods",
   "version": "0.1.1",
   "description": "Games for Claude Code: play while Claude works. A menu above the prompt, each game in a side pane. Zero model calls.",
-  "author": { "name": "Birium", "email": "bidiumdev@gmail.com" },
-  "homepage": "https://github.com/Birium/gamemods",
-  "repository": "https://github.com/Birium/gamemods",
+  "author": { "name": "Bidium", "email": "bidiumdev@gmail.com" },
+  "homepage": "https://github.com/bidium-org/gamemods",
+  "repository": "https://github.com/bidium-org/gamemods",
   "license": "MIT",
   "icon": "./assets/icon.png",
   "keywords": [
